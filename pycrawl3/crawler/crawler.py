@@ -9,24 +9,8 @@ from bs4 import BeautifulSoup
 
 from blacklist import Blacklist
 from linkscrub import scrub
-from writer import EmailWriter
-from timeout import timeout, TimeoutError
-
-
-def get_gmail_address_set(emails):
-    out = set()
-    for email in emails:
-        if "gmail" in email:
-            out.add(email)
-    return out
-
-
-def get_valid_urls_from_page(anchors):
-    partial_links = []
-    for anchor in anchors:
-        link = anchor.attrs["href"] if "href" in anchor.attrs else ''
-        partial_links.append(link)
-    return partial_links
+from timeout import TimeoutError
+from writer.writer import EmailDelegate, PostgresWriter
 
 
 def get_url_extras(url):
@@ -48,24 +32,25 @@ def get_url_response(url):
         response = None
     return response
 
-@timeout(seconds=2)
+
 def get_email_set_from_response(url_response):
     emails = set(re.findall(
         r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.com", url_response.text, re.I))
     return emails
 
 
-def process_url():
-    return
+def crawl_from_url(url_string):
+    queue = deque()
+    queue.append(url_string)
+    eo = crawl(queue)
+    print(eo)
 
 
 def crawl(links):
     blacklist = Blacklist.factory("url", list(links))
     links_to_process = deque(blacklist.remove_blacklisted())
-    email_blacklist = Blacklist(
-        scrub_words=['example', 'email', 'support', 'domain', 'orders', 'info', 'github', 'registration', 'mozilla',
-                     'donate', 'feedback', 'newsletter', 'name'])
-    email_writer = EmailWriter(email_blacklist)
+    email_blacklist = Blacklist.factory("email")
+    writer = PostgresWriter()
     processed_urls = set()
     emails = set()
 
@@ -87,7 +72,9 @@ def crawl(links):
         except TimeoutError:
             continue
 
-        email_writer.add_emails(new_emails)
+        for email in new_emails:
+            if not email_blacklist.is_blacklisted(email):
+                writer.add_data(email)
 
         # create a beautiful soup for the html document
 
@@ -116,24 +103,3 @@ def crawl(links):
         links_to_process = deque(scrubbed)
 
     return emails
-
-
-if __name__ == "__main__":
-
-    import argparse
-
-    parser = argparse.ArgumentParser(description='Crawl the web for emails')
-    parser.add_argument('--url', help='The seed url to begin crawling from.')
-    parser.add_argument('--term', help='A google search term to start with.')
-
-    args = parser.parse_args()
-    urls = None
-    if args.url:
-        urls = [args.url]
-    elif args.term:
-        urls = google_for_urls(args.term)
-
-    crawl_urls = deque()
-    for url in urls:
-        crawl_urls.append(url)
-    emails_out = crawl(crawl_urls)

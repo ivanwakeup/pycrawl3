@@ -1,22 +1,17 @@
 from os.path import expanduser
 
 
-class EmailWriter(object):
+class EmailDelegate(object):
 
     __emails = set()
+    __writer = None
 
-    __homedir = expanduser("~")
-
-    __tier_1_emails = ('{}/tier_1_emails.txt'.format(__homedir), set())
-    __tier_2_emails = ('{}/tier_2_emails.txt'.format(__homedir), set())
-
-    __should_write = False
-
-    def __init__(self, blacklist=None):
+    def __init__(self, writer, blacklist=None):
+        self.__writer = writer
         self.blacklist = blacklist
 
     def add_email(self, email):
-        self.__check_should_write()
+        self.__writer.check_should_write()
         if not self.blacklist.is_blacklisted(email):
             self.__emails.add(email)
 
@@ -38,7 +33,7 @@ class EmailWriter(object):
 
     def __sort_emails_into_tiers(self):
         for email in self.__emails:
-            if EmailWriter.is_tier_1(email):
+            if EmailDelegate.is_tier_1(email):
                 self.__tier_1_emails[1].add(email)
             else:
                 self.__tier_2_emails[1].add(email)
@@ -74,4 +69,65 @@ class EmailWriter(object):
         self.__write_tier_1()
         self.__write_tier_2()
         self.__empty_email_sets()
+        self.__should_write = False
+
+
+class Writer(object):
+
+    __data = set()
+    __should_write = False
+
+    def __init__(self):
+        super()
+
+
+class TextFileWriter(Writer):
+
+    __homedir = expanduser("~")
+
+    def __init__(self):
+        super()
+
+    def add_data(self, data):
+        self.__check_should_write()
+        self.__data.add(data)
+
+    def __check_should_write(self):
+        if self.__should_write:
+            self.write()
+        elif len(self.__data) > 10:
+            self.__should_write = True
+
+    def __empty_data(self):
+        self.__data = set()
+
+    def write(self, filename):
+        f = open(filename, 'a')
+        for email in self.__data:
+            f.write("%s\n" % email)
+        f.close()
+        self.__empty_data()
+        self.__should_write = False
+
+
+class PostgresWriter(Writer):
+
+    def __init__(self):
+        super()
+
+    def add_data(self, data):
+        self.__check_should_write()
+        self.__data.add(data)
+
+    def __check_should_write(self):
+        if self.__should_write:
+            self.write()
+        elif len(self.__data) > 10:
+            self.__should_write = True
+
+    def __empty_data(self):
+        self.__data = set()
+
+    def write(self):
+        self.__empty_data()
         self.__should_write = False
