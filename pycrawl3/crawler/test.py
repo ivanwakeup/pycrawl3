@@ -1,16 +1,11 @@
 import re
-from collections import deque
 from urllib.parse import urlparse
 
 import requests
 import requests.exceptions
 from bs4 import BeautifulSoup
 
-from .blacklist import Blacklist
-from .linkscrub import scrub
 from .timeout import TimeoutError
-from ..writer.writer import EmailDelegate, PostgresWriter
-
 from utils.logger import log
 
 
@@ -25,10 +20,8 @@ class EmailCrawler(object):
         self.delegate = delegate
 
     def start(self, url_string):
-        queue = deque()
-        queue.append(url_string)
-        eo = self.crawl(queue)
-        print(eo)
+        self.url_queue.append(url_string)
+        self.crawl()
 
     def get_url_extras(self, url):
         parts = urlparse(url)
@@ -86,7 +79,7 @@ class EmailCrawler(object):
             if self.email_count_map[base_url] >= limit:
                 return False
             else:
-                self.base_url_counts[base_url] += 1
+                self.email_count_map[base_url] += 1
                 return True
 
     def crawl(self):
@@ -113,14 +106,8 @@ class EmailCrawler(object):
                 self.delegate.add_email(email, url)
 
             new_links = self.find_links(response, url_extras)
-            scrubbed = scrub_visited(new_links, links_to_process, processed_urls)
-
-            links_to_process.extendleft(scrubbed)
-
-            urls_list = list(links_to_process)
-            # scrub linkset here
-            scrubbed = scrub(urls_list, 4)
-            log.debug(scrubbed)
-            links_to_process = deque(scrubbed)
+            for link in new_links:
+                if link not in self.processed_urls:
+                    self.url_queue.appendLeft(link)
 
         return
