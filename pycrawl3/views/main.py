@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from pycrawl3.crawler import crawler
 
+
 def index(request):
     return render(request, 'pycrawl3/index.html')
 

@@ -1,75 +1,34 @@
 from os.path import expanduser
+from ..models import Email
 
 
 class EmailDelegate(object):
 
-    __emails = set()
     __writer = None
 
     def __init__(self, writer, blacklist=None):
         self.__writer = writer
         self.blacklist = blacklist
 
-    def add_email(self, email):
-        self.__writer.check_should_write()
+    def add_email(self, email, url):
         if not self.blacklist.is_blacklisted(email):
-            self.__emails.add(email)
+            obj = Email(email_address=email, from_url=url, tier=self.get_email_tier(email))
+            self.__writer.add_data(obj)
 
     def add_emails(self, emails):
-        self.__check_should_write()
-        if emails:
-            for email in emails:
-                if self.blacklist:
-                    if not self.blacklist.is_blacklisted(email):
-                        self.__emails.add(email)
-                else:
-                    self.__emails.add(email)
+        obj_set = set()
+        for email, url in emails:
+            if not self.blacklist.is_blacklisted(email):
+                obj = Email(email_address=email, from_url=url, tier=self.get_email_tier(email))
+            obj_set.add(obj)
+        self.__Email_set.update(obj_set)
 
-    def __check_should_write(self):
-        if self.__should_write:
-            self.write()
-        elif len(self.__emails) > 10:
-            self.__should_write = True
-
-    def __sort_emails_into_tiers(self):
-        for email in self.__emails:
-            if EmailDelegate.is_tier_1(email):
-                self.__tier_1_emails[1].add(email)
-            else:
-                self.__tier_2_emails[1].add(email)
-
-    @staticmethod
-    def is_tier_1(email):
+    def get_email_tier(self, email):
         tier1 = ["gmail", "yahoo", "hotmail", "aol"]
         for tier in tier1:
             if tier in email:
-                return True
-
-    def __write_tier_1(self):
-        filename, emails = self.__tier_1_emails
-        f = open(filename, 'a')
-        for email in emails:
-            f.write("%s\n" % email)
-        f.close()
-
-    def __write_tier_2(self):
-        filename, emails = self.__tier_2_emails
-        f = open(filename, 'a')
-        for email in emails:
-            f.write("%s\n" % email)
-        f.close()
-
-    def __empty_email_sets(self):
-        self.__tier_1_emails = ('{}/tier_1_emails.txt'.format(self.__homedir), set())
-        self.__tier_2_emails = ('{}/tier_2_emails.txt'.format(self.__homedir), set())
-        self.__emails = set()
-
-    def write(self):
-        self.__sort_emails_into_tiers()
-        self.__write_tier_1()
-        self.__write_tier_2()
-        self.__empty_email_sets()
-        self.__should_write = False
+                return 1
+        return 2
 
 
 class Writer(object):
@@ -88,9 +47,9 @@ class TextFileWriter(Writer):
     def __init__(self):
         super()
 
-    def add_data(self, data):
+    def add_data(self, model_data):
         self.__check_should_write()
-        self.__data.add(data)
+        self.__data.add(model_data)
 
     def __check_should_write(self):
         if self.__should_write:
