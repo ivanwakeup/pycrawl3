@@ -1,4 +1,3 @@
-import logging
 import re
 from collections import deque
 from urllib.parse import urlparse
@@ -12,6 +11,8 @@ from .linkscrub import scrub
 from .timeout import TimeoutError
 from ..writer.writer import EmailDelegate, PostgresWriter
 
+from utils.logger import crawler_log as log
+
 
 def get_url_extras(url):
     parts = urlparse(url)
@@ -24,13 +25,13 @@ def get_url_extras(url):
 
 
 def get_url_response(url):
-    print("Processing %s" % url)
+    log.info("Processing %s" % url)
     try:
         response = requests.get(url, timeout=3)
     except requests.exceptions.RequestException as e:
-        print("{} failed: {}".format(url, str(e)))
+        log.debug("{} failed: {}".format(url, str(e)))
         response = None
-    print("done processing")
+        log.debug("done processing")
     return response
 
 
@@ -49,7 +50,7 @@ def crawl_from_url(url_string):
 
 def find_links(html, url_extras, blacklist):
     # create a beautiful soup for the html document
-
+    log.debug("Creating BeautifulSoup for %s" % url_extras[1])
     soup = BeautifulSoup(html.text, "html.parser")
     links = set()
     # find and process all the anchors in the document
@@ -63,7 +64,7 @@ def find_links(html, url_extras, blacklist):
             link = url_extras[2] + link
         if not blacklist.is_blacklisted(link):
             links.add(link)
-
+    log.debug("done finding links")
     return links
 
 
@@ -84,8 +85,6 @@ def crawl(links):
     delegate = EmailDelegate(writer, email_blacklist)
     processed_urls = set()
     emails = set()
-
-    logger = logging.getLogger()
 
     while links_to_process:
         url1 = links_to_process.pop()
@@ -115,7 +114,7 @@ def crawl(links):
         # urls = scrub_linkset(urls)
         urls_list = list(links_to_process)
         scrubbed = scrub(urls_list, 4)
-        logger.debug(scrubbed)
+        log.debug(scrubbed)
         links_to_process = deque(scrubbed)
 
     return emails
