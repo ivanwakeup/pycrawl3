@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from utils.logger import crawler_log as log
+from utils.logger import log
 
 
 def scrub(links, base_occurences=10):
@@ -27,9 +27,9 @@ def scrub(links, base_occurences=10):
 
     log.debug("FULLBASE: {}\n\n".format(full_base_count))
 
-    new_linklist = []
+    new_linkset = set()
     for item in full_base_count:
         if item[1][1] < base_occurences:
-            new_linklist.append(item[0])
+            new_linkset.add(item[0])
 
-    return new_linklist
+    return new_linkset

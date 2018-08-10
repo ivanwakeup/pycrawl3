@@ -1,6 +1,7 @@
 from os.path import expanduser
 from ..models import Email
 from django.db import transaction
+from utils.logger import log
 
 
 class EmailDelegate(object):
@@ -37,10 +38,9 @@ class Writer(object):
         self.__should_write = False
 
     def add_data(self, model_data):
-        print(model_data.email_address)
+        log.info("adding %s to writer" % model_data)
         self.check_should_write()
         self.data.add(model_data)
-        print(self.data)
 
     def empty_data(self):
         self.data = set()

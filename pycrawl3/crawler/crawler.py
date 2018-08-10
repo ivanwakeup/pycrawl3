@@ -11,7 +11,7 @@ from .linkscrub import scrub
 from .timeout import TimeoutError
 from ..writer.writer import EmailDelegate, PostgresWriter
 
-from utils.logger import crawler_log as log
+from utils.logger import log
 
 
 def get_url_extras(url):
@@ -86,6 +86,8 @@ def crawl(links):
     processed_urls = set()
     emails = set()
 
+
+
     while links_to_process:
         url1 = links_to_process.pop()
         # add to processed immediately, to support failure
@@ -110,9 +112,8 @@ def crawl(links):
 
         links_to_process.extendleft(scrubbed)
 
-        # scrub linkset to ensure crawler doesn't waste time on one site
-        # urls = scrub_linkset(urls)
         urls_list = list(links_to_process)
+        #scrub linkset here
         scrubbed = scrub(urls_list, 4)
         log.debug(scrubbed)
         links_to_process = deque(scrubbed)
