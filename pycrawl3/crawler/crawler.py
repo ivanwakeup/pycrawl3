@@ -100,7 +100,6 @@ def crawl(links):
         processed_urls.add(url1)
 
         url_extras = get_url_extras(url1)
-        if url_extras[1] in email_map
 
         response = get_url_response(url1)
         if not response or not response.ok:

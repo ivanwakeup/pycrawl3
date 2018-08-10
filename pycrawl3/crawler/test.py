@@ -5,12 +5,11 @@ import requests
 import requests.exceptions
 from bs4 import BeautifulSoup
 
-from .timeout import TimeoutError
 from utils.logger import log
+from .timeout import TimeoutError
 
 
 class EmailCrawler(object):
-
     email_count_map = {}
     processed_urls = set()
 
@@ -19,8 +18,7 @@ class EmailCrawler(object):
         self.blacklist = url_blacklist
         self.delegate = delegate
 
-    def start(self, url_string):
-        self.url_queue.append(url_string)
+    def start(self):
         self.crawl()
 
     def get_url_extras(self, url):
