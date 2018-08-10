@@ -32,23 +32,23 @@ class EmailDelegate(object):
 
 class Writer(object):
 
-    __data = set()
-    __should_write = False
-
     def __init__(self):
-        super()
+        self.data = set()
+        self.__should_write = False
 
     def add_data(self, model_data):
-        self.__check_should_write()
-        self.__data.add(model_data)
+        print(model_data.email_address)
+        self.check_should_write()
+        self.data.add(model_data)
+        print(self.data)
 
-    def __empty_data(self):
-        self.__data = set()
+    def empty_data(self):
+        self.data = set()
 
-    def __check_should_write(self):
+    def check_should_write(self):
         if self.__should_write:
             self.write()
-        elif len(self.__data) > 10:
+        elif len(self.data) > 1:
             self.__should_write = True
 
     def write(self):
@@ -62,25 +62,25 @@ class TextFileWriter(Writer):
 
     def __init__(self, filename="emails.txt"):
         self.__filename = filename
-        super()
+        super(TextFileWriter, self).__init__()
 
     def write(self):
         f = open(self.__filename, 'a')
-        for email_model in self.__data:
+        for email_model in self.data:
             f.write("%s\n" % "{}|{}".format(email_model.email_address, email_model.tier))
         f.close()
-        self.__empty_data()
+        self.empty_data()
         self.__should_write = False
 
 
 class PostgresWriter(Writer):
 
     def __init__(self):
-        super()
+        super(PostgresWriter, self).__init__()
 
     @transaction.atomic
     def write(self):
-        for email_model in self.__data:
+        for email_model in self.data:
             email_model.save()
-        self.__empty_data()
+        self.empty_data()
         self.__should_write = False

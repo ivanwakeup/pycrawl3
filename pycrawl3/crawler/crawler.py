@@ -51,7 +51,7 @@ def crawl(links):
     links_to_process = deque(blacklist.remove_blacklisted())
     email_blacklist = Blacklist.factory("email")
     writer = PostgresWriter()
-    delegate = EmailDelegate(email_blacklist, writer)
+    delegate = EmailDelegate(writer, email_blacklist)
     processed_urls = set()
     emails = set()
 
