@@ -2,6 +2,7 @@ from os.path import expanduser
 from ..models import Email
 from django.db import transaction
 
+
 class EmailDelegate(object):
 
     __writer = None

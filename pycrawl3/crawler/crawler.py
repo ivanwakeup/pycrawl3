@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from blacklist import Blacklist
 from linkscrub import scrub
 from timeout import TimeoutError
-from writer.writer import EmailDelegate, PostgresWriter
+from ..writer.writer import EmailDelegate, PostgresWriter
 
 
 def get_url_extras(url):
@@ -51,12 +51,13 @@ def crawl(links):
     links_to_process = deque(blacklist.remove_blacklisted())
     email_blacklist = Blacklist.factory("email")
     writer = PostgresWriter()
+    delegate = EmailDelegate(email_blacklist, writer)
     processed_urls = set()
     emails = set()
 
     logger = logging.getLogger()
 
-    while len(links_to_process):
+    while links_to_process:
         url1 = links_to_process.pop()
         # add to processed immediately, to support failure
         processed_urls.add(url1)
@@ -73,8 +74,7 @@ def crawl(links):
             continue
 
         for email in new_emails:
-            if not email_blacklist.is_blacklisted(email):
-                writer.add_data(email)
+            delegate.add_email(email, url1)
 
         # create a beautiful soup for the html document
 
