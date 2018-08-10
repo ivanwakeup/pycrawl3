@@ -76,6 +76,12 @@ def scrub_visited(linkset, to_process, processed):
             tmp.add(link)
     return tmp
 
+def should_process_url(base_url_counts, base_url, limit=4):
+    if base_url in base_url_counts:
+        if base_url_counts[base_url] >= limit:
+            return False
+        else:
+            base_url_counts[base_url] += 1
 
 def crawl(links):
     url_blacklist = Blacklist.factory("url", list(links))
@@ -86,7 +92,7 @@ def crawl(links):
     processed_urls = set()
     emails = set()
 
-
+    email_map = {}
 
     while links_to_process:
         url1 = links_to_process.pop()
@@ -94,6 +100,7 @@ def crawl(links):
         processed_urls.add(url1)
 
         url_extras = get_url_extras(url1)
+        if url_extras[1] in email_map
 
         response = get_url_response(url1)
         if not response or not response.ok:
