@@ -7,9 +7,9 @@ import requests
 import requests.exceptions
 from bs4 import BeautifulSoup
 
-from blacklist import Blacklist
-from linkscrub import scrub
-from timeout import TimeoutError
+from .blacklist import Blacklist
+from .linkscrub import scrub
+from .timeout import TimeoutError
 from ..writer.writer import EmailDelegate, PostgresWriter
 
 
