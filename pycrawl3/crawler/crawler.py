@@ -30,6 +30,7 @@ def get_url_response(url):
     except requests.exceptions.RequestException as e:
         print("{} failed: {}".format(url, str(e)))
         response = None
+    print("done processing")
     return response
 
 
@@ -46,9 +47,38 @@ def crawl_from_url(url_string):
     print(eo)
 
 
+def find_links(html, url_extras, blacklist):
+    # create a beautiful soup for the html document
+
+    soup = BeautifulSoup(html.text, "html.parser")
+    links = set()
+    # find and process all the anchors in the document
+    for anchor in soup.find_all("a"):
+        # extract link url from the anchor
+        link = anchor.attrs["href"] if "href" in anchor.attrs else ''
+        # resolve relative links
+        if link.startswith('/'):
+            link = url_extras[1] + link
+        elif not link.startswith('http'):
+            link = url_extras[2] + link
+        if not blacklist.is_blacklisted(link):
+            links.add(link)
+
+    return links
+
+
+def scrub_visited(linkset, to_process, processed):
+    # add the new url to the queue if it was not enqueued nor processed yet
+    tmp = set()
+    for link in linkset:
+        if link not in to_process and link not in processed:
+            tmp.add(link)
+    return tmp
+
+
 def crawl(links):
-    blacklist = Blacklist.factory("url", list(links))
-    links_to_process = deque(blacklist.remove_blacklisted())
+    url_blacklist = Blacklist.factory("url", list(links))
+    links_to_process = deque(url_blacklist.remove_blacklisted())
     email_blacklist = Blacklist.factory("email")
     writer = PostgresWriter()
     delegate = EmailDelegate(writer, email_blacklist)
@@ -76,24 +106,10 @@ def crawl(links):
         for email in new_emails:
             delegate.add_email(email, url1)
 
-        # create a beautiful soup for the html document
+        new_links = find_links(response, url_extras, url_blacklist)
+        scrubbed = scrub_visited(new_links, links_to_process, processed_urls)
 
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # find and process all the anchors in the document
-        for anchor in soup.find_all("a"):
-            # extract link url from the anchor
-            link = anchor.attrs["href"] if "href" in anchor.attrs else ''
-            # resolve relative links
-            if link.startswith('/'):
-                link = url_extras[1] + link
-            elif not link.startswith('http'):
-                link = url_extras[2] + link
-
-            # add the new url to the queue if it was not enqueued nor processed yet
-            if link not in links_to_process and link not in processed_urls:
-                if not blacklist.is_blacklisted(link):
-                    links_to_process.appendleft(link)
+        links_to_process.extendleft(scrubbed)
 
         # scrub linkset to ensure crawler doesn't waste time on one site
         # urls = scrub_linkset(urls)
