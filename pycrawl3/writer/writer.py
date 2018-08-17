@@ -1,7 +1,7 @@
 from os.path import expanduser
 from ..models import Email
 from django.db import transaction
-from utils.logger import log
+from ..utils.logger import log
 
 
 class EmailDelegate(object):
