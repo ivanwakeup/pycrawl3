@@ -80,6 +80,7 @@ class PostgresWriter(Writer):
 
     @transaction.atomic
     def write(self):
+        log.info("WRITING BATCH TO DB!!!!")
         for email_model in self.data:
             email_model.save()
         self.empty_data()
