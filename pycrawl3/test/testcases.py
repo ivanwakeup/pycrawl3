@@ -1,5 +1,5 @@
 import unittest
-from crawler.blacklist import Blacklist
+from pycrawl3.crawler.blacklist import Blacklist
 
 
 class TestCrawler(unittest.TestCase):
