@@ -12,9 +12,9 @@ class EmailDelegate(object):
         self.__writer = writer
         self.blacklist = blacklist
 
-    def add_email(self, email, url):
+    def add_email(self, email, url, seed=None):
         if not self.blacklist.is_blacklisted(email):
-            email_model = Email(email_address=email, from_url=url, tier=self.get_email_tier(email))
+            email_model = Email(seed_url=seed, email_address=email, from_url=url, tier=self.get_email_tier(email))
             self.__writer.add_data(email_model)
 
     def add_emails(self, emails):

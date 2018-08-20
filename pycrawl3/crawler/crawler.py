@@ -7,14 +7,19 @@ from bs4 import BeautifulSoup
 
 from ..utils.logger import log
 from .timeout import TimeoutError
+from collections import deque
 
 
 class EmailCrawler(object):
     email_count_map = {}
     processed_urls = set()
+    seed_url = None
 
-    def __init__(self, url_queue, url_blacklist, delegate):
-        self.url_queue = url_queue
+    def __init__(self, seed, url_blacklist, delegate):
+        q = deque()
+        q.append(seed)
+        self.seed_url = seed
+        self.url_queue = q
         self.blacklist = url_blacklist
         self.delegate = delegate
 
@@ -103,7 +108,7 @@ class EmailCrawler(object):
                 continue
 
             for email in new_emails:
-                self.delegate.add_email(email, url)
+                self.delegate.add_email(email, url, seed=self.seed_url)
 
             new_links = self.find_links(response, url_extras)
             for link in new_links:

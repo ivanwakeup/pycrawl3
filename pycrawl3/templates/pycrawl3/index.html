@@ -13,7 +13,7 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label class="sr-only" for="url">BASE URL</label>
-                    <input type="text" name="url" placeholder="" class="form-username form-control"
+                    <input type="text" name="urls" placeholder="" class="form-username form-control"
                            id="url">
                 </div>
                 <button type="submit" class="btn">SUBMIT</button>
@@ -22,6 +22,20 @@
                         <span id="submit-msg"></span>
                     </div>
                 </div>
+            </form>
+        </div>
+
+
+
+        <div class="form-bottom">
+            <form role="form" id="urls-form" class="crawl-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="sr-only" for="urls">BASE URLS</label>
+                    <textarea name="urls" rows="10" class="form-username form-control"
+                              id="urls"></textarea>
+                </div>
+                <button type="submit" class="btn">SUBMIT URLS</button>
             </form>
         </div>
 
