@@ -13,15 +13,19 @@ def index(request):
 
 def crawl(request):
     if request.method == 'POST':
-        url = request.POST.get('url')
-        queue = deque()
-        queue.append(url)
-        url_blacklist = Blacklist.factory("url")
-        email_blacklist = Blacklist.factory("email")
-        writer = PostgresWriter()
-        delegate = EmailDelegate(writer, email_blacklist)
-        crawler \
-            .EmailCrawler(queue, url_blacklist, delegate) \
-            .start()
+        urls = request.POST.get('urls')
+        start_crawls(urls)
 
     return render(request, 'pycrawl3/index.html')
+
+
+def start_crawls(urls):
+    url_blacklist = Blacklist.factory("url")
+    email_blacklist = Blacklist.factory("email")
+    writer = PostgresWriter()
+    delegate = EmailDelegate(writer, email_blacklist)
+    for url in urls:
+        q = deque()
+        q.append(url)
+        c = crawler.EmailCrawler(q, url_blacklist, delegate)
+        c.start()
