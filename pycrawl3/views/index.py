@@ -1,5 +1,3 @@
-from collections import deque
-
 from django.shortcuts import render
 
 from pycrawl3.crawler import crawler
@@ -22,10 +20,16 @@ def crawl(request):
     return render(request, 'pycrawl3/index.html')
 
 
+def add_seed_url(request):
+    if request.method == 'POST':
+        urls = request.POST.get('urls')
+
+
+
 def start_crawls(url):
     url_blacklist = Blacklist.factory("url")
     email_blacklist = Blacklist.factory("email")
-    writer = PostgresWriter()
+    writer = PostgresWriter(batch_size=5)
     delegate = EmailDelegate(writer, email_blacklist)
     c = crawler.EmailCrawler(url, url_blacklist, delegate)
     c.start()

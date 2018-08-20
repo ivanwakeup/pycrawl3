@@ -33,9 +33,10 @@ class EmailDelegate(object):
 
 class Writer(object):
 
-    def __init__(self):
+    def __init__(self, batch_size):
         self.data = set()
         self.__should_write = False
+        self.batch_size = batch_size
 
     def add_data(self, model_data):
         log.info("adding %s to writer" % model_data)
@@ -48,7 +49,7 @@ class Writer(object):
     def check_should_write(self):
         if self.__should_write:
             self.write()
-        elif len(self.data) > 1:
+        elif len(self.data) > self.batch_size:
             self.__should_write = True
 
     def write(self):
@@ -75,13 +76,13 @@ class TextFileWriter(Writer):
 
 class PostgresWriter(Writer):
 
-    def __init__(self):
-        super(PostgresWriter, self).__init__()
+    def __init__(self, batch_size):
+        super(PostgresWriter, self).__init__(batch_size)
 
     @transaction.atomic
     def write(self):
         log.info("WRITING BATCH TO DB!!!!")
-        for email_model in self.data:
-            email_model.save()
+        for model in self.data:
+            model.save()
         self.empty_data()
         self.__should_write = False
