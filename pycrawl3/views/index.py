@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from pycrawl3.crawler import crawler
 from pycrawl3.crawler.blacklist import Blacklist
-from pycrawl3.writer.writer import PostgresWriter, EmailDelegate
+from pycrawl3.writer.writer import PostgresWriter, EmailDelegate, SeedDelegate
 
 from multiprocessing import Pool
 
@@ -22,8 +22,14 @@ def crawl(request):
 
 def add_seed_url(request):
     if request.method == 'POST':
-        urls = request.POST.get('urls')
+        seeds = request.POST.get('seeds')
+        seed_list = seeds.split('\r\n')
+        writer = PostgresWriter(batch_size=1)
+        delegate = SeedDelegate(writer)
+        for seed in seed_list:
+            delegate.add_seed(seed)
 
+    return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
 
 
 def start_crawls(url):

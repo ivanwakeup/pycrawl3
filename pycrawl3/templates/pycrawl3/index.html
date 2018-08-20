@@ -39,6 +39,20 @@
             </form>
         </div>
 
+
+        <div class="form-bottom">
+            <form role="form" id="seed-form" class="crawl-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="sr-only" for="seeds">seeds</label>
+                    <textarea name="seeds" rows="10" class="form-username form-control"
+                              id="seeds"></textarea>
+                </div>
+                <button type="submit" class="btn">SUBMIT</button>
+            </form>
+        </div>
+
+
         <script src="{% static 'pycrawl3/js/jquery-3.3.1.min.js' %}"></script>
         <script src="{% static 'pycrawl3/js/crawl.js' %}"></script>
 		<script src="{% static 'pycrawl3/js/toastr.js' %}"></script>

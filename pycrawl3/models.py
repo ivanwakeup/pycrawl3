@@ -10,6 +10,6 @@ class Email(models.Model):
 
 
 class Seed(models.Model):
-    url = models.CharField("Url", max_length=255, null=False)
+    url = models.CharField("Url", primary_key=True, max_length=255, null=False)
     crawled = models.BooleanField("Url Crawled")
     updatedAt = models.DateTimeField("Updated Time", auto_now=True)

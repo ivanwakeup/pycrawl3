@@ -1,5 +1,5 @@
 from os.path import expanduser
-from ..models import Email
+from ..models import Email, Seed
 from django.db import transaction
 from ..utils.logger import log
 
@@ -31,26 +31,36 @@ class EmailDelegate(object):
         return 2
 
 
+class SeedDelegate(object):
+
+    __writer = None
+
+    def __init__(self, writer, blacklist=None):
+        self.__writer = writer
+        self.blacklist = blacklist
+
+    def add_seed(self, url):
+        seed_model = Seed(url=url, crawled=False)
+        self.__writer.add_data(seed_model)
+
+
 class Writer(object):
 
     def __init__(self, batch_size):
         self.data = set()
-        self.__should_write = False
         self.batch_size = batch_size
 
     def add_data(self, model_data):
         log.info("adding %s to writer" % model_data)
-        self.check_should_write()
         self.data.add(model_data)
+        self.check_should_write()
 
     def empty_data(self):
         self.data = set()
 
     def check_should_write(self):
-        if self.__should_write:
+        if len(self.data) >= self.batch_size:
             self.write()
-        elif len(self.data) > self.batch_size:
-            self.__should_write = True
 
     def write(self):
         return
@@ -71,7 +81,6 @@ class TextFileWriter(Writer):
             f.write("%s\n" % "{}|{}".format(email_model.email_address, email_model.tier))
         f.close()
         self.empty_data()
-        self.__should_write = False
 
 
 class PostgresWriter(Writer):
@@ -85,4 +94,3 @@ class PostgresWriter(Writer):
         for model in self.data:
             model.save()
         self.empty_data()
-        self.__should_write = False
