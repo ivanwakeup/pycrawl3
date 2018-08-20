@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views.index import index, crawl, add_seed_url
+from .views.index import index, crawl, add_seed_url, start_crawl
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('crawl', crawl, name='crawl'),
     path('add-seed', add_seed_url, name='add-seed'),
+    path('start-crawl', start_crawl, name='start-crawl'),
     path('', index, name='index')
 ]

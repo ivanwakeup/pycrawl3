@@ -43,6 +43,11 @@ class SeedDelegate(object):
         seed_model = Seed(url=url, crawled=False)
         self.__writer.add_data(seed_model)
 
+    @staticmethod
+    def get_seeds_to_crawl():
+        seeds = Seed.objects.filter(crawled=False)
+        return list(seeds)
+
 
 class Writer(object):
 
@@ -51,7 +56,7 @@ class Writer(object):
         self.batch_size = batch_size
 
     def add_data(self, model_data):
-        log.info("adding %s to writer" % model_data)
+        log.info("adding %s to persistence" % model_data)
         self.data.add(model_data)
         self.check_should_write()
 

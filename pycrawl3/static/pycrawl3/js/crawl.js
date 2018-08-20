@@ -66,3 +66,25 @@ $("#seed-form").submit(function(e) {
 
     e.preventDefault();
 });
+
+$("#start-crawls").click(function() {
+    var url = "/start-crawl"
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: function(data){
+            if(data.success) {
+                toastr.success(data.message);
+                setTimeout(function() {
+		            window.location.href = '/';
+	            }, 2000);
+            }
+            else {
+                toastr.error(data.message);
+            }
+        }
+    });
+
+    e.preventDefault();
+});
