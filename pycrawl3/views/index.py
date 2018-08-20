@@ -22,7 +22,11 @@ def crawl(request):
 
 def start_crawl(request):
     seeds = SeedDelegate.get_seeds_to_crawl()
-    mp_crawl_handler([x.url for x in seeds])
+    urls = []
+    for seed in seeds:
+        SeedDelegate.set_crawled(seed)
+        urls.append(seed.url)
+    mp_crawl_handler(urls)
     return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
 
 

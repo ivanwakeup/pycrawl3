@@ -48,6 +48,11 @@ class SeedDelegate(object):
         seeds = Seed.objects.filter(crawled=False)
         return list(seeds)
 
+    @staticmethod
+    def set_crawled(seed):
+        seed.crawled = True
+        seed.save()
+
 
 class Writer(object):
 
