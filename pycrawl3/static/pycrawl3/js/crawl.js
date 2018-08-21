@@ -98,6 +98,7 @@ $("#get-csv").click(function() {
         success: function(data){
             if(data.success) {
                 toastr.success(data.message);
+                console.log(data);
                 setTimeout(function() {
 		            window.location.href = '/';
 	            }, 2000);
