@@ -1,10 +1,12 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 
 from pycrawl3.crawler import crawler
 from pycrawl3.crawler.blacklist import Blacklist
 from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, SeedDelegate
 
 from multiprocessing import Pool
+from resources import EmailResource
 
 
 def index(request):
@@ -40,6 +42,14 @@ def add_seed_url(request):
             delegate.add_seed(seed)
 
     return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
+
+
+def get_emails_as_csv(request):
+    er = EmailResource()
+    dataset = er.export()
+    response = HttpResponse(dataset.csv, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="persons.csv"'
+    return response
 
 
 def dispatch_crawlers(url):

@@ -125,3 +125,6 @@ USE_TZ = True
 
 STATIC_URL = '/templates/'
 STATIC_ROOT = 'static'
+
+# use db transactions for django-import-export
+IMPORT_EXPORT_USE_TRANSACTIONS = True

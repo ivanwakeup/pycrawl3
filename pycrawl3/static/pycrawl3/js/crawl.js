@@ -86,5 +86,25 @@ $("#start-crawls").click(function() {
         }
     });
 
-    e.preventDefault();
+});
+
+
+$("#get-csv").click(function() {
+    var url = "/get-emails-csv"
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: function(data){
+            if(data.success) {
+                toastr.success(data.message);
+                setTimeout(function() {
+		            window.location.href = '/';
+	            }, 2000);
+            }
+            else {
+                toastr.error(data.message);
+            }
+        }
+    });
 });
