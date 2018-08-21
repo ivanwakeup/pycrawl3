@@ -6,7 +6,7 @@ from pycrawl3.crawler.blacklist import Blacklist
 from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, SeedDelegate
 
 from multiprocessing import Pool
-from resources import EmailResource
+from ..resources import EmailResource
 
 
 def index(request):
