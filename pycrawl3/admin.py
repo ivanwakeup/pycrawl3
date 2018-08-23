@@ -2,7 +2,8 @@ from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
 from .models import Email, Seed
 
-#temporary admin class until https://github.com/django-import-export/django-import-export/issues/797 is resolved!
+
+# temporary admin class until https://github.com/django-import-export/django-import-export/issues/797 is resolved!
 class PycrawlAdmin(ImportExportModelAdmin):
 
     def get_export_queryset(self, request):
@@ -35,6 +36,3 @@ class EmailAdmin(PycrawlAdmin):
 @admin.register(Seed)
 class SeedAdmin(PycrawlAdmin):
     pass
-
-
-

@@ -8,49 +8,52 @@
 </head>
     <body>
 
-        <div class="form-bottom">
-            <form role="form" id="crawl-form" class="crawl-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label class="sr-only" for="url">BASE URL</label>
-                    <input type="text" name="urls" placeholder="" class="form-username form-control"
-                           id="url">
-                </div>
-                <button type="submit" class="btn">SUBMIT</button>
-                <div class="col-lg-12">
-                    <div id="submit-msg-div" class="text-center hidden">
-                        <span id="submit-msg"></span>
-                    </div>
-                </div>
-            </form>
-        </div>
+        <!--<div class="form-bottom">-->
+            <!--<form role="form" id="crawl-form" class="crawl-form">-->
+                <!--{% csrf_token %}-->
+                <!--<div class="form-group">-->
+                    <!--<label class="sr-only" for="url">BASE URL</label>-->
+                    <!--<input type="text" name="urls" placeholder="" class="form-username form-control"-->
+                           <!--id="url">-->
+                <!--</div>-->
+                <!--<button type="submit" class="btn">SUBMIT</button>-->
+                <!--<div class="col-lg-12">-->
+                    <!--<div id="submit-msg-div" class="text-center hidden">-->
+                        <!--<span id="submit-msg"></span>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</form>-->
+        <!--</div>-->
 
 
 
-        <div class="form-bottom">
-            <form role="form" id="urls-form" class="crawl-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label class="sr-only" for="urls">BASE URLS</label>
-                    <textarea name="urls" rows="10" class="form-username form-control"
-                              id="urls"></textarea>
-                </div>
-                <button type="submit" class="btn">SUBMIT URLS</button>
-            </form>
-        </div>
+        <!--<div class="form-bottom">-->
+            <!--<form role="form" id="urls-form" class="crawl-form">-->
+                <!--{% csrf_token %}-->
+                <!--<div class="form-group">-->
+                    <!--<label class="sr-only" for="urls">BASE URLS</label>-->
+                    <!--<textarea name="urls" rows="10" class="form-username form-control"-->
+                              <!--id="urls"></textarea>-->
+                <!--</div>-->
+                <!--<button type="submit" class="btn">SUBMIT URLS</button>-->
+            <!--</form>-->
+        <!--</div>-->
 
 
         <div class="form-bottom">
             <form role="form" id="seed-form" class="crawl-form">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label class="sr-only" for="seeds">seeds</label>
+                    <label class="sr-only" for="seeds">SEEDS (SEPARATE BY NEWLINE)</label>
                     <textarea name="seeds" rows="10" class="form-username form-control"
                               id="seeds"></textarea>
                 </div>
                 <button type="submit" class="btn">SUBMIT</button>
             </form>
         </div>
+
+        <br>
+        <br>
 
         <button id="start-crawls">START CRAWLS FROM DB</button>
 
