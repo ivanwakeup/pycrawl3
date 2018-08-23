@@ -55,7 +55,7 @@ def get_emails_as_csv(request):
 def dispatch_crawlers(url):
     url_blacklist = Blacklist.factory("url")
     email_blacklist = Blacklist.factory("email")
-    writer = PostgresWriter(batch_size=5)
+    writer = PostgresWriter(batch_size=1)
     delegate = EmailDelegate(writer, email_blacklist)
     c = crawler.EmailCrawler(url, url_blacklist, delegate)
     c.start()
