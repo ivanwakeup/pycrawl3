@@ -6,7 +6,7 @@ import requests.exceptions
 from bs4 import BeautifulSoup
 
 from ..utils.logger import log
-from .timeout import TimeoutError
+from ..utils.timeout import TimeoutError
 from collections import deque
 
 
