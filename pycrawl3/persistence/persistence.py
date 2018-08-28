@@ -2,7 +2,7 @@ from os.path import expanduser
 from ..models import Email, Seed
 from django.db import transaction
 from ..utils.logger import log
-
+from django.db.utils import OperationalError
 
 class EmailDelegate(object):
 
@@ -102,5 +102,8 @@ class PostgresWriter(Writer):
     def write(self):
         log.info("WRITING BATCH TO DB!!!!")
         for model in self.data:
-            model.save()
+            try:
+                model.save()
+            except OperationalError:
+                continue
         self.empty_data()

@@ -17,7 +17,8 @@ def crawl(request):
     if request.method == 'POST':
         urls = request.POST.get('urls')
         url_list = urls.split('\r\n')
-        mp_crawl_handler(url_list)
+        url_tuple = [(url, 1) for url in url_list]
+        mp_crawl_handler(url_tuple)
 
     return render(request, 'pycrawl3/index.html')
 
@@ -27,7 +28,7 @@ def start_crawl(request):
     urls = []
     for seed in seeds:
         SeedDelegate.set_crawled(seed)
-        urls.append(seed.url)
+        urls.append((seed.url, 1))
     mp_crawl_handler(urls)
     return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
 

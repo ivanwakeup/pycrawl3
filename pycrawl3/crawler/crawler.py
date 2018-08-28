@@ -10,18 +10,30 @@ from ..utils.timeout import TimeoutError
 from collections import deque
 
 
+class EmailCrawlerConfig(object):
+
+    url_occurence_limit = None
+    crawler_depth = None
+
+    def __init__(self, limit, depth):
+        self.url_occurence_limit = limit
+        self.crawler_depth = depth
+
+
 class EmailCrawler(object):
     email_count_map = {}
     processed_urls = set()
+    config = None
     seed_url = None
 
-    def __init__(self, seed, url_blacklist, delegate):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig(4, 2)):
         q = deque()
         q.append(seed)
         self.seed_url = seed
         self.url_queue = q
         self.blacklist = url_blacklist
         self.delegate = delegate
+        self.config = crawler_config
 
     def start(self):
         self.crawl()
@@ -77,9 +89,10 @@ class EmailCrawler(object):
                 tmp.add(link)
         return tmp
 
-    def should_process_url(self, base_url, limit=4):
+    #process URL only if base url has occurred less than or equal to configurable limit
+    def should_process_url(self, base_url):
         if base_url in self.email_count_map:
-            if self.email_count_map[base_url] >= limit:
+            if self.email_count_map[base_url] >= self.config.url_occurence_limit:
                 self.email_count_map[base_url] += 1
                 return False
             else:
@@ -90,7 +103,7 @@ class EmailCrawler(object):
 
     def crawl(self):
         while self.url_queue:
-            url = self.url_queue.pop()
+            url, level = self.url_queue.pop()
             # add to processed immediately, to support failure
             self.processed_urls.add(url)
 
@@ -112,7 +125,10 @@ class EmailCrawler(object):
 
             new_links = self.find_links(response, url_extras)
             for link in new_links:
-                if link not in self.processed_urls:
-                    self.url_queue.appendleft(link)
+                #only add link if crawler depth is low enough
+                if link not in self.processed_urls and level < self.config.crawler_depth:
+                    self.url_queue.appendleft((link, level+1))
 
+        log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
         return
+
