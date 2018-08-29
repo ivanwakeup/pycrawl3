@@ -1,7 +1,18 @@
 from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
 from .models import Email, Seed
+from import_export import resources
 
+
+class EmailResource(resources.ModelResource):
+    class Meta:
+        model = Email
+
+
+class SeedResource(resources.ModelResource):
+    class Meta:
+        model = Seed
+        import_id_fields = ('url',)
 
 # temporary admin class until https://github.com/django-import-export/django-import-export/issues/797 is resolved!
 class PycrawlAdmin(ImportExportModelAdmin):
@@ -30,9 +41,11 @@ class PycrawlAdmin(ImportExportModelAdmin):
 
 @admin.register(Email)
 class EmailAdmin(PycrawlAdmin):
-    pass
+    resource_class = EmailResource
 
 
 @admin.register(Seed)
 class SeedAdmin(PycrawlAdmin):
-    pass
+    resource_class = SeedResource
+
+
