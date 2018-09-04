@@ -77,12 +77,12 @@ WSGI_APPLICATION = 'pycrawl3.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': os.environ["PYCRAWL3_DB_BACKEND"],
         'NAME': 'pycrawl3',
-        'USER': 'django',
-        'PASSWORD': 'Lukecem1',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'USER': os.environ["PYCRAWL3_DB_USER"],
+        'PASSWORD': os.environ["PYCRAWL3_DB_PASS"],
+        'HOST': os.environ["PYCRAWL3_DB_HOST"],
+        'PORT': os.environ["PYCRAWL3_DB_PORT"],
     }
 }
 

@@ -26,7 +26,7 @@ class EmailCrawler(object):
     config = None
     seed_url = None
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig(4, 2)):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig(4, 4)):
         q = deque()
         q.append(seed)
         self.seed_url = seed
