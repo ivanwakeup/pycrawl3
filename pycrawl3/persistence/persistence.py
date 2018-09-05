@@ -7,11 +7,14 @@ from django.db.utils import OperationalError
 
 class EmailDelegate(object):
 
-    __writer = None
+    #sales_words is a list of sales words
+    #names is a Trie of human names
 
-    def __init__(self, writer, blacklist=None):
+    def __init__(self, writer, blacklist=None, sales_words=None, names=None):
         self.__writer = writer
         self.blacklist = blacklist
+        self.sales_words = sales_words
+        self.names = names
 
     def add_email(self, email, url, seed=None):
         if not self.blacklist.is_blacklisted(email):
@@ -19,11 +22,15 @@ class EmailDelegate(object):
             self.__writer.add_data(email_model)
 
     def get_email_tier(self, email):
-        tier1 = ["gmail", "yahoo", "hotmail", "aol"]
-        for tier in tier1:
-            if tier in email:
+        for word in self.sales_words:
+            if word in email:
+                return 3
+        providers = ['gmail', 'hotmail', 'aol', 'yahoo']
+        for prov in providers:
+            if prov in email:
                 return 1
-        return 2
+
+
 
 
 class SeedDelegate(object):
