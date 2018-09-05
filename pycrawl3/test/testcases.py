@@ -1,5 +1,5 @@
 import unittest
-from pycrawl3.crawler.blacklist import Blacklist
+from email.blacklist import Blacklist
 from pycrawl3.utils.Trie import Trie
 
 

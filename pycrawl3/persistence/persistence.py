@@ -3,7 +3,7 @@ from ..models import Email, Seed
 from django.db import transaction
 from ..utils.logger import log
 from django.db.utils import OperationalError
-
+from pycrawl3.utils.Trie import Trie
 
 class EmailDelegate(object):
 
@@ -14,7 +14,8 @@ class EmailDelegate(object):
         self.__writer = writer
         self.blacklist = blacklist
         self.sales_words = sales_words
-        self.names = names
+        self.make_names_trie(names)
+
 
     def add_email(self, email, url, seed=None):
         if not self.blacklist.is_blacklisted(email):
@@ -29,6 +30,11 @@ class EmailDelegate(object):
         for prov in providers:
             if prov in email:
                 return 1
+
+        #determine tier 2?
+        name_trie = Trie()
+        for name in self.names:
+            name_trie.add
 
 
 

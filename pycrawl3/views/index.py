@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from pycrawl3.crawler import crawler
-from pycrawl3.crawler.blacklist import Blacklist
+from email.blacklist import Blacklist
 from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, SeedDelegate
 
 from multiprocessing import Pool
@@ -25,7 +25,13 @@ def crawl(request):
 
 def start_crawl(request):
     seeds = SeedDelegate.get_seeds_to_crawl()
-    urls = []
+
+    #initialize crawl package
+    crawl_package = []
+    url_blacklist = Blacklist.factory("url")
+    email_blacklist = Blacklist.factory("email")
+    email_ranker = EmailRanker()
+
     for seed in seeds:
         SeedDelegate.set_crawled(seed)
         urls.append((seed.url, 1))
@@ -53,9 +59,8 @@ def get_emails_as_csv(request):
     return response
 
 
-def dispatch_crawlers(url):
-    url_blacklist = Blacklist.factory("url")
-    email_blacklist = Blacklist.factory("email")
+def dispatch_crawlers(url, url_blacklist, email_blacklist, email_ranker):
+
     writer = PostgresWriter(batch_size=1)
     delegate = EmailDelegate(writer, email_blacklist)
     c = crawler.EmailCrawler(url, url_blacklist, delegate)
