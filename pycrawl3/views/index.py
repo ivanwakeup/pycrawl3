@@ -7,6 +7,9 @@ from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, Seed
 
 from multiprocessing import Pool
 from ..resources import EmailResource
+from emails.emails import EmailRanker
+
+from settings.common import BASE_DIR
 
 
 def index(request):
@@ -30,12 +33,15 @@ def start_crawl(request):
     crawl_package = []
     url_blacklist = Blacklist.factory("url")
     email_blacklist = Blacklist.factory("emails")
-    email_ranker = EmailRanker()
+
+    base = BASE_DIR + '/../static/pycrawl3/'
+    ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
 
     for seed in seeds:
         SeedDelegate.set_crawled(seed)
-        urls.append((seed.url, 1))
-    mp_crawl_handler(urls)
+        crawl_package.append(((seed.url, 1), url_blacklist, email_blacklist, ranker))
+    mp_crawl_handler(crawl_package)
+
     return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
 
 
@@ -67,6 +73,6 @@ def dispatch_crawlers(url, url_blacklist, email_blacklist, email_ranker):
     c.start()
 
 
-def mp_crawl_handler(urls):
+def mp_crawl_handler(crawl_package):
     p = Pool(4)
-    p.map(dispatch_crawlers, urls)
+    p.map(dispatch_crawlers, crawl_package)
