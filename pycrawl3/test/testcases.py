@@ -48,12 +48,14 @@ class TestCrawler(unittest.TestCase):
         for line in f:
             emails.append(line.lower().strip())
         f.close()
+
         f = open('/Users/ivanwakeup/emailst2.csv', 'a')
         for email in emails:
             (email, rank) = (email, ranker.rank_email(email))
             if rank == 2:
                 print(email, rank)
                 f.write(email+"\n")
+        f.close()
 
 
 
