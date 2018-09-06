@@ -2,14 +2,14 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from pycrawl3.crawler import crawler
-from emails.blacklist import Blacklist
+from pycrawl3.emails.blacklist import Blacklist
 from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, SeedDelegate
 
 from multiprocessing import Pool
 from ..resources import EmailResource
-from emails.emails import EmailRanker
+from pycrawl3.emails.emails import EmailRanker
 
-from settings.common import BASE_DIR
+from pycrawl3.settings.common import BASE_DIR
 
 
 def index(request):
@@ -65,10 +65,10 @@ def get_emails_as_csv(request):
     return response
 
 
-def dispatch_crawlers(url, url_blacklist, email_blacklist, email_ranker):
-
+def dispatch_crawlers(crawl_package):
+    url, url_blacklist, email_blacklist, email_ranker = crawl_package
     writer = PostgresWriter(batch_size=1)
-    delegate = EmailDelegate(writer, email_blacklist)
+    delegate = EmailDelegate(writer, email_blacklist, email_ranker)
     c = crawler.EmailCrawler(url, url_blacklist, delegate)
     c.start()
 

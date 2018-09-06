@@ -1,4 +1,4 @@
-from utils.logger import log
+from pycrawl3.utils.logger import log
 
 class Trie():
 

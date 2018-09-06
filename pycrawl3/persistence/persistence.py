@@ -23,9 +23,7 @@ class EmailDelegate(object):
             self.__writer.add_data(email_model)
 
     def get_email_tier(self, email):
-        return ranker.rank_email(email)
-
-
+        return self.ranker.rank_email(email)
 
 
 class SeedDelegate(object):
