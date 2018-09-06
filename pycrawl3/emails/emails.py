@@ -1,4 +1,5 @@
 from pycrawl3.utils.Trie import Trie
+from pycrawl3.utils.logger import log
 
 
 class EmailRanker(object):
@@ -62,6 +63,12 @@ class EmailRanker(object):
         return False
 
     def rank_email(self, email):
+        num_count = 0
+        for letter in email:
+            if letter.isnumeric():
+                num_count += 1
+                if num_count > 6:
+                    return 3
         for word in self.scrub_words:
             if word in email:
                 return 3
@@ -70,6 +77,9 @@ class EmailRanker(object):
             if prov in email:
                 return 1
 
-        if self.__email_contains_name(email) and not self.__email_contains_top_urls(email):
-            return 2
+        if self.__email_contains_name(email):
+            log.debug("email: {} contains name, checking against top urls...\n".format(email))
+            if not self.__email_contains_top_urls(email):
+                log.debug("email: {} not found in top urls...\n".format(email))
+                return 2
         return 3

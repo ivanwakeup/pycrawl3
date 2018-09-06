@@ -40,8 +40,21 @@ class TestCrawler(unittest.TestCase):
 
     def test_email_ranker(self):
         base = BASE_DIR + '/../static/pycrawl3/'
-        ranker = EmailRanker(base+'sales_words.txt', base+'person_names.txt', base+'top_sites.txt')
-        print(ranker.rank_email('james.whitbrook@gizmodo.com'))
+        ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
+        tier2 = '/Users/ivanwakeup/tier2.csv'
+
+        f = open(tier2, 'r')
+        emails = []
+        for line in f:
+            emails.append(line.lower().strip())
+        f.close()
+        f = open('/Users/ivanwakeup/emailst2.csv', 'a')
+        for email in emails:
+            (email, rank) = (email, ranker.rank_email(email))
+            if rank == 2:
+                print(email, rank)
+                f.write(email+"\n")
+
 
 
 

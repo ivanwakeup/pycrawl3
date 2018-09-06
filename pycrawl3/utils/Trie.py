@@ -1,3 +1,5 @@
+from utils.logger import log
+
 class Trie():
 
     def __init__(self):
@@ -18,14 +20,16 @@ class Trie():
 
     def has_word(self, word):
         sub_trie = self.trie
-
+        log_word = ''
         for letter in word:
             if letter in sub_trie:
+                log_word += letter
                 sub_trie = sub_trie[letter]
             else:
                 return False
         else:
             if self._end in sub_trie:
+                log.debug('Trie Word Found: {}\n'.format(log_word))
                 return True
             else:
                 return False
