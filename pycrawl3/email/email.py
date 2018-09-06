@@ -5,6 +5,7 @@ class EmailRanker(object):
 
     scrub_words = None
     names_trie = None
+    domain_scrub = None
 
     def __init__(self, scrub_words_file=None, names_file=None, domain_file=None):
         if scrub_words_file:
@@ -38,6 +39,29 @@ class EmailRanker(object):
         f.close()
         self.domain_scrub = scrub_words
 
+    def __email_contains_name(self, email):
+        # traverse email string to determine if a name is present
+        i = 0
+        j = 1
+        while i < len(email) and j < len(email):
+            #if the tree contains the prefix, keep searching the rest of the string
+            if self.names_trie.has_prefix(email[i:j]):
+                if self.names_trie.has_word(email[i:j]):
+                    return True
+                else:
+                    j += 1
+            else:
+                i += 1
+                j = i + 1
+        return False
+
+
+    def __email_contains_top_urls(self, email):
+        parsed = email.split("@")
+        if len(parsed) > 1:
+            return parsed[1] in self.domain_scrub
+        return False
+
     def rank_email(self, email):
         for word in self.scrub_words:
             if word in email:
@@ -47,10 +71,14 @@ class EmailRanker(object):
             if prov in email:
                 return 1
 
-        #determine tier 2?
-        name_trie = Trie()
-        for name in self.names:
-            name_trie.add
+        if self.__email_contains_name(email) and not self.__email_contains_top_urls(email):
+            return 2
+        return 3
+
+
+
+
+
 
 
 
