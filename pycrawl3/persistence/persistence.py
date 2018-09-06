@@ -5,16 +5,16 @@ from ..utils.logger import log
 from django.db.utils import OperationalError
 from pycrawl3.utils.Trie import Trie
 
+
 class EmailDelegate(object):
 
     #sales_words is a list of sales words
     #names is a Trie of human names
 
-    def __init__(self, writer, blacklist=None, sales_words=None, names=None):
+    def __init__(self, writer, blacklist=None, ranker=None):
         self.__writer = writer
         self.blacklist = blacklist
-        self.sales_words = sales_words
-        self.make_names_trie(names)
+        self.ranker = ranker
 
 
     def add_email(self, email, url, seed=None):
@@ -23,18 +23,7 @@ class EmailDelegate(object):
             self.__writer.add_data(email_model)
 
     def get_email_tier(self, email):
-        for word in self.sales_words:
-            if word in email:
-                return 3
-        providers = ['gmail', 'hotmail', 'aol', 'yahoo']
-        for prov in providers:
-            if prov in email:
-                return 1
-
-        #determine tier 2?
-        name_trie = Trie()
-        for name in self.names:
-            name_trie.add
+        return ranker.rank_email(email)
 
 
 
