@@ -2,7 +2,6 @@ from pycrawl3.utils.Trie import Trie
 
 
 class EmailRanker(object):
-
     scrub_words = None
     names_trie = None
     domain_scrub = None
@@ -29,6 +28,7 @@ class EmailRanker(object):
         for line in f:
             word = line.lower().strip()
             trie.add_word(word)
+        f.close()
         self.names_trie = trie
 
     def __build_domain_scrub(self, domain_file):
@@ -40,11 +40,11 @@ class EmailRanker(object):
         self.domain_scrub = scrub_words
 
     def __email_contains_name(self, email):
-        # traverse email string to determine if a name is present
+        # traverse emails string to determine if a name is present
         i = 0
         j = 1
         while i < len(email) and j < len(email):
-            #if the tree contains the prefix, keep searching the rest of the string
+            # if the tree contains the prefix, keep searching the rest of the string
             if self.names_trie.has_prefix(email[i:j]):
                 if self.names_trie.has_word(email[i:j]):
                     return True
@@ -54,7 +54,6 @@ class EmailRanker(object):
                 i += 1
                 j = i + 1
         return False
-
 
     def __email_contains_top_urls(self, email):
         parsed = email.split("@")
@@ -74,12 +73,3 @@ class EmailRanker(object):
         if self.__email_contains_name(email) and not self.__email_contains_top_urls(email):
             return 2
         return 3
-
-
-
-
-
-
-
-
-

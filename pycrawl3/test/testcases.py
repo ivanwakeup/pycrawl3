@@ -1,6 +1,8 @@
 import unittest
-from email.blacklist import Blacklist
+from pycrawl3.emails.blacklist import Blacklist
 from pycrawl3.utils.Trie import Trie
+from pycrawl3.emails.emails import EmailRanker
+from settings.common import BASE_DIR
 
 
 class TestCrawler(unittest.TestCase):
@@ -17,7 +19,7 @@ class TestCrawler(unittest.TestCase):
         self.assertFalse(blacklist.is_blacklisted("notsome@dudeman.com"))
 
     def test_email_blacklist(self):
-        blacklist = Blacklist.factory("email")
+        blacklist = Blacklist.factory("emails")
         self.assertTrue(blacklist.is_blacklisted("info@dudeman.com"))
         self.assertFalse(blacklist.is_blacklisted("guy@dudeman.com"))
 
@@ -35,12 +37,11 @@ class TestCrawler(unittest.TestCase):
         self.assertFalse(trie.has_word("dallind"))
         self.assertFalse(trie.has_word(""))
 
-    # def find_email_names(self, email, trie):
-    #     for i in range(len(email)):
-    #         for j in range(i+1, len(email)):
-    #             if trie.find_word(email[i:j]):
-    #                 return True
-    #     return False
+
+    def test_email_ranker(self):
+        base = BASE_DIR + '/../static/pycrawl3/'
+        ranker = EmailRanker(base+'sales_words.txt', base+'person_names.txt', base+'top_sites.txt')
+        print(ranker.rank_email('james.whitbrook@gizmodo.com'))
 
 
 

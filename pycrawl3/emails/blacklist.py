@@ -20,7 +20,7 @@ class Blacklist(object):
             return UrlBlacklist(scrub_list)
         if type == "ext":
             return ExtensionBlacklist(scrub_list)
-        if type == "email":
+        if type == "emails":
             return EmailBlacklist(scrub_list)
 
     factory = staticmethod(factory)
@@ -47,7 +47,7 @@ class UrlBlacklist(Blacklist):
 
 
 class EmailBlacklist(Blacklist):
-    blacklist = ['example', 'email', 'support', 'domain', 'orders', 'info', 'github', 'registration', 'mozilla',
+    blacklist = ['example', 'emails', 'support', 'domain', 'orders', 'info', 'github', 'registration', 'mozilla',
                      'donate', 'feedback', 'newsletter', 'name', 'noreply', 'team', 'admin', 'security', 'about', 'media', 'contact', 'customer' ]
 
     def __init__(self, scrub_list=None):

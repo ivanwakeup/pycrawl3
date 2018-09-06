@@ -77,12 +77,12 @@ WSGI_APPLICATION = 'pycrawl3.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ["PYCRAWL3_DB_BACKEND"],
+        'ENGINE': os.environ.get("PYCRAWL3_DB_BACKEND"),
         'NAME': 'pycrawl3',
-        'USER': os.environ["PYCRAWL3_DB_USER"],
-        'PASSWORD': os.environ["PYCRAWL3_DB_PASS"],
-        'HOST': os.environ["PYCRAWL3_DB_HOST"],
-        'PORT': os.environ["PYCRAWL3_DB_PORT"],
+        'USER': os.environ.get("PYCRAWL3_DB_USER"),
+        'PASSWORD': os.environ.get("PYCRAWL3_DB_PASS"),
+        'HOST': os.environ.get("PYCRAWL3_DB_HOST"),
+        'PORT': os.environ.get("PYCRAWL3_DB_PORT"),
     }
 }
 
