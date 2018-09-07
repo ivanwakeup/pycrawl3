@@ -75,4 +75,7 @@ def dispatch_crawlers(crawl_package):
 
 def mp_crawl_handler(crawl_package):
     p = Pool(4)
-    p.map(dispatch_crawlers, crawl_package)
+    try:
+        p.map(dispatch_crawlers, crawl_package)
+    except:
+        pass

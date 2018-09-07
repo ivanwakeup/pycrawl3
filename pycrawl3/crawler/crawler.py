@@ -117,6 +117,8 @@ class EmailCrawler(object):
 
             try:
                 new_emails = self.find_emails(response)
+                if len(new_emails) > 3:
+                    continue
             except TimeoutError:
                 continue
 
