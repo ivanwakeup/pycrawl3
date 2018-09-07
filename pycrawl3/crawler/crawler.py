@@ -14,10 +14,12 @@ class EmailCrawlerConfig(object):
 
     url_occurence_limit = None
     crawler_depth = None
+    max_emails_per_page = None
 
-    def __init__(self, limit, depth):
+    def __init__(self, limit=4, depth=4, max_emails_per_page=3):
         self.url_occurence_limit = limit
         self.crawler_depth = depth
+        self.max_emails_per_page = max_emails_per_page
 
 
 class EmailCrawler(object):
@@ -26,7 +28,7 @@ class EmailCrawler(object):
     config = None
     seed_url = None
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig(4, 4)):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig()):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -117,7 +119,7 @@ class EmailCrawler(object):
 
             try:
                 new_emails = self.find_emails(response)
-                if len(new_emails) > 3:
+                if len(new_emails) > self.config.max_emails_per_page:
                     continue
             except TimeoutError:
                 continue
