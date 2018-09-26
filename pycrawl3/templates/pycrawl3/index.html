@@ -36,7 +36,8 @@
 
 
         <div id="search-seed-urls">
-            <form role="form" id="google-form" class="crawl-form">
+            <form role="form" id="google-form" class="google-form" method="post">
+                {% csrf_token %}
                 <label>GOOGLE SEARCH FOR SEED URLS</label>
                 <input type="text" name="search-term" id="search-term" placeholder="enter a term to search for seed urls">
                 <button id="google-form-button" type="submit">SEARCH GOOGLE</button>

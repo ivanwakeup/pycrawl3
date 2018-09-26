@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .views.index import index, crawl, add_seed_url, start_crawl, get_emails_as_csv
+from .views.search import search_google
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,5 +24,6 @@ urlpatterns = [
     path('add-seed', add_seed_url, name='add-seed'),
     path('start-crawl', start_crawl, name='start-crawl'),
     path('get-emails-csv', get_emails_as_csv, name='get-emails-csv'),
+    path('search-google', search_google, name="search_google"),
     path('', index, name='index')
 ]
