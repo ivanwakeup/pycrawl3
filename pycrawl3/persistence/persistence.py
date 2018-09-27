@@ -3,19 +3,14 @@ from ..models import Email, Seed
 from django.db import transaction
 from ..utils.logger import log
 from django.db.utils import OperationalError
-from pycrawl3.utils.Trie import Trie
 
 
 class EmailDelegate(object):
-
-    #sales_words is a list of sales words
-    #names is a Trie of human names
 
     def __init__(self, writer, blacklist=None, ranker=None):
         self.__writer = writer
         self.blacklist = blacklist
         self.ranker = ranker
-
 
     def add_email(self, email, url, seed=None):
         if not self.blacklist.is_blacklisted(email):

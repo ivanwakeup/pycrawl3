@@ -14,7 +14,8 @@ class TestAnalytics(unittest.TestCase):
         count_text = filter_words(self.word_list)
         counts = get_word_count(count_text)
         counts.sort(key=lambda x: x[1], reverse=True)
-        print(counts)
+        for item in counts:
+            print(item)
 
     def test_filter_stop_words(self):
         pass

@@ -27,7 +27,7 @@ def get_word_list(text_string):
     return lst
 
 
-def get_word_count(word_list, minimum_count=3):
+def get_word_count(word_list, minimum_count=0):
     counter = Counter(word_list)
     occs = [(word, count) for word, count in counter.items() if count > minimum_count]
     return occs
@@ -48,7 +48,7 @@ def get_visible_text(body):
     return u" ".join(str(t.strip()) for t in visible_texts)
 
 
-def filter_stop_word(word):
+def contains_stop_word(word):
     stop_words = "a|an|and|are|as|at|be|by|for|from|has|he|in|is|it|its|of|on|that|the|to|was|were|will|with"
     stop_set = set(stop_words.split("|"))
     if word in stop_set:
@@ -56,8 +56,16 @@ def filter_stop_word(word):
     return False
 
 
-def filter_short_word(word, length=2):
+def contains_short_word(word, length=2):
     if len(word) <= length:
+        return True
+    return False
+
+
+def contains_month(word):
+    months = set(["january", "february", "march", "april", "may", "june", "july",
+                  "august", "september", "october", "november", "december"])
+    if word in months:
         return True
     return False
 
@@ -65,8 +73,9 @@ def filter_short_word(word, length=2):
 def filter_words(word_list):
     result = []
     for word in word_list:
-        if not filter_stop_word(word) and not filter_short_word(word):
-            result.append(word)
+        if contains_stop_word(word) or contains_short_word(word) or word.isdigit() or contains_month(word):
+            continue
+        result.append(word)
     return result
 
 

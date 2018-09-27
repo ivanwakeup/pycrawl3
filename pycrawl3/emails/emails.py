@@ -6,6 +6,8 @@ class EmailRanker(object):
     scrub_words = None
     names_trie = None
     domain_scrub = None
+    high_num_count = 4
+    bad_chars = ["+"]
 
     def __init__(self, scrub_words_file=None, names_file=None, domain_file=None):
         if scrub_words_file:
@@ -62,13 +64,24 @@ class EmailRanker(object):
             return parsed[1] in self.domain_scrub
         return False
 
-    def rank_email(self, email):
+    def __email_contains_high_nums(self, email):
         num_count = 0
         for letter in email:
             if letter.isnumeric():
                 num_count += 1
-                if num_count > 6:
-                    return 3
+        if num_count >= self.high_num_count:
+            return True
+        return False
+
+    def __email_contains_bad_chars(self, email):
+        for char in self.bad_chars:
+            if char in email:
+                return True
+        return False
+
+    def rank_email(self, email):
+        if self.__email_contains_high_nums(email) or self.__email_contains_bad_chars(email):
+            return 3
         for word in self.scrub_words:
             if word in email:
                 return 3
