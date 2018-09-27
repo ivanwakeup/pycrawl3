@@ -21,10 +21,14 @@ def get_url_response(url):
     return response
 
 
-def get_words_from_text(text_string, minimum_count=3):
+def get_word_list(text_string):
     lst = re.findall(r'\b\w+', text_string)
     lst = [x.lower() for x in lst]
-    counter = Counter(lst)
+    return lst
+
+
+def get_word_count(word_list, minimum_count=3):
+    counter = Counter(word_list)
     occs = [(word, count) for word, count in counter.items() if count > minimum_count]
     return occs
 
@@ -44,8 +48,16 @@ def get_visible_text(body):
     return u" ".join(t.strip() for t in visible_texts)
 
 
-def filter_stop_words(text_string):
-    return re.findall(r'^/\b([a-z0-9]+)\b(?<!ignoreme|ignoreme2|ignoreme3)')
+def filter_stop_words(word_list):
+    stop_words = "a|an|and|are|as|at|be|by|for|from|has|he|in|is|it|its|of|on|that|the|to|was|were|will|with"
+    stop_set = set(stop_words.split("|"))
+    for word in word_list:
+        if word in stop_set:
+            word_list.remove(word)
+    return word_list
+
+def filter_short_words(word_list, length=2):
+
 
 
 
