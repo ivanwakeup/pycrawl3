@@ -44,4 +44,10 @@ def get_visible_text(body):
     return u" ".join(t.strip() for t in visible_texts)
 
 
+def filter_stop_words(text_string):
+    return re.findall(r'^/\b([a-z0-9]+)\b(?<!ignoreme|ignoreme2|ignoreme3)')
+
+
+
+
 
