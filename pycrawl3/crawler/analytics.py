@@ -45,18 +45,29 @@ def get_visible_text(body):
     soup = BeautifulSoup(body, 'html.parser')
     texts = soup.findAll(text=True)
     visible_texts = filter(tag_visible, texts)
-    return u" ".join(t.strip() for t in visible_texts)
+    return u" ".join(str(t.strip()) for t in visible_texts)
 
 
-def filter_stop_words(word_list):
+def filter_stop_word(word):
     stop_words = "a|an|and|are|as|at|be|by|for|from|has|he|in|is|it|its|of|on|that|the|to|was|were|will|with"
     stop_set = set(stop_words.split("|"))
-    for word in word_list:
-        if word in stop_set:
-            word_list.remove(word)
-    return word_list
+    if word in stop_set:
+        return True
+    return False
 
-def filter_short_words(word_list, length=2):
+
+def filter_short_word(word, length=2):
+    if len(word) <= length:
+        return True
+    return False
+
+
+def filter_words(word_list):
+    result = []
+    for word in word_list:
+        if not filter_stop_word(word) and not filter_short_word(word):
+            result.append(word)
+    return result
 
 
 
