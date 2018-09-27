@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='emails',
+            model_name='Email',
             name='seed_url',
             field=models.CharField(max_length=255, null=True, verbose_name='Seed Url'),
         ),

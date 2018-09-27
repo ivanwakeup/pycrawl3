@@ -11,11 +11,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name='emails',
+            model_name='Email',
             name='updated_at',
         ),
         migrations.AlterField(
-            model_name='emails',
+            model_name='Email',
             name='createdAt',
             field=models.DateTimeField(auto_now=True, verbose_name='Created Time'),
         ),
