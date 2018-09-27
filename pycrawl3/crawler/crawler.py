@@ -1,14 +1,9 @@
-import requests.exceptions
 from ..utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.urls import *
 
 
-class EmailCrawlerConfig(object):
-
-    url_occurence_limit = None
-    crawler_depth = None
-    max_emails_per_page = None
+class CrawlerConfig(object):
 
     def __init__(self, limit=4, depth=4, max_emails_per_page=3):
         self.url_occurence_limit = limit
@@ -17,12 +12,8 @@ class EmailCrawlerConfig(object):
 
 
 class EmailCrawler(object):
-    url_count_map = {}
-    processed_urls = set()
-    config = None
-    seed_url = None
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig()):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig()):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -30,6 +21,8 @@ class EmailCrawler(object):
         self.blacklist = url_blacklist
         self.delegate = delegate
         self.config = crawler_config
+        self.url_count_map = {}
+        self.processed_urls = set()
 
     def start(self):
         self.crawl()
@@ -90,12 +83,8 @@ class EmailCrawler(object):
 
 
 class BloggerCrawler(object):
-    url_count_map = {}
-    processed_urls = set()
-    config = None
-    seed_url = None
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=EmailCrawlerConfig()):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig()):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -103,6 +92,8 @@ class BloggerCrawler(object):
         self.blacklist = url_blacklist
         self.delegate = delegate
         self.config = crawler_config
+        self.url_count_map = {}
+        self.processed_urls = set()
 
     def start(self):
         self.crawl()
@@ -119,22 +110,31 @@ class BloggerCrawler(object):
             self.url_count_map[base_url] = 1
         return True
 
+    def enqueue_new_urls(self, url_extras, new_urls, level):
+        for link in new_urls:
+            new_extras = get_url_extras(link)
+            if link not in self.processed_urls and level < self.config.crawler_depth:
+                if url_extras[1] == new_extras[1]:
+                    self.url_queue.append((link, level))
+                else:
+                    self.url_queue.appendleft((link, level+1))
+
     def crawl(self):
         while self.url_queue:
             url, level = self.url_queue.pop()
             # add to processed immediately, to support failure
             self.processed_urls.add(url)
 
-            url_extras = self.get_url_extras(url)
+            url_extras = get_url_extras(url)
             if not self.should_process_url(url_extras[1]):
                 continue
 
-            response = self.get_url_response(url)
+            response = get_url_response(url)
             if not response or not response.ok:
                 continue
 
             try:
-                new_emails = self.find_emails(response)
+                new_emails = find_emails(response)
                 if len(new_emails) > self.config.max_emails_per_page:
                     continue
             except TimeoutError:
@@ -143,11 +143,8 @@ class BloggerCrawler(object):
             for email in new_emails:
                 self.delegate.add_email(email, url, seed=self.seed_url)
 
-            new_links = self.find_links(response, url_extras)
-            for link in new_links:
-                #only add link if crawler depth is low enough
-                if link not in self.processed_urls and level < self.config.crawler_depth:
-                    self.url_queue.appendleft((link, level+1))
+            new_links = find_links(response, url_extras)
+            self.enqueue_new_urls(url_extras, new_links, level)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
-        return
+        return 0
