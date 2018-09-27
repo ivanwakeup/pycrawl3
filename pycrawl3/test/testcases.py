@@ -1,8 +1,6 @@
 import unittest
 from pycrawl3.emails.blacklist import Blacklist
 from pycrawl3.utils.Trie import Trie
-from pycrawl3.emails.emails import EmailRanker
-from settings.common import BASE_DIR
 
 
 class TestCrawler(unittest.TestCase):
