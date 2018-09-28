@@ -1,6 +1,7 @@
 from ..utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.urls import *
+from pycrawl3.crawler.analyzer import BloggerDomainAnalyzer
 
 
 class CrawlerConfig(object):
@@ -26,14 +27,6 @@ class EmailCrawler(object):
 
     def start(self):
         self.crawl()
-
-    def scrub_visited(self, linkset, to_process, processed):
-        # add the new url to the queue if it was not enqueued nor processed yet
-        tmp = set()
-        for link in linkset:
-            if link not in to_process and link not in processed:
-                tmp.add(link)
-        return tmp
 
     #process URL only if base url has occurred less than or equal to configurable limit
     def should_process_url(self, base_url):
@@ -82,7 +75,7 @@ class EmailCrawler(object):
 
 class BloggerCrawler(object):
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=10, depth=4)):
+    def __init__(self, seed, url_blacklist, delegate=None, crawler_config=CrawlerConfig(limit=10, depth=4)):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -104,11 +97,12 @@ class BloggerCrawler(object):
     #process URL only if base url has occurred less than or equal to configurable limit
     def should_process_url(self, base_url):
         if base_url in self.url_count_map:
-            if self.url_count_map[base_url] >= self.config.url_occurence_limit:
+            if self.url_count_map[base_url] > self.config.url_occurence_limit:
                 self.url_count_map[base_url] += 1
                 return False
             else:
                 self.url_count_map[base_url] += 1
+                return True
         else:
             if self.should_process_domain(base_url):
                 self.url_count_map[base_url] = 1
@@ -120,14 +114,15 @@ class BloggerCrawler(object):
             new_extras = UrlExtras(link)
             if link not in self.processed_urls and level < self.config.crawler_depth:
                 #append websites from the same domain to the start of the queue
-                if url_extras.base_url == new_extras.base_url:
-                    self.url_queue.append((link, level))
-                else:
-                    self.url_queue.appendleft((link, level+1))
+                if self.should_process_url(url_extras.base_url):
+                    if url_extras.base_url == new_extras.base_url:
+                        self.url_queue.append((link, level))
+                    else:
+                        self.url_queue.appendleft((link, level+1))
 
     def crawl(self):
         analyzer = BloggerDomainAnalyzer()
-        start_url = UrlExtras(self.url_queue[-1])
+        start_url = UrlExtras(self.url_queue[-1][0])
 
         while self.url_queue:
             url, level = self.url_queue.pop()
@@ -150,11 +145,11 @@ class BloggerCrawler(object):
             except TimeoutError:
                 continue
 
-            for email in new_emails:
-                self.delegate.add_email(email, url, seed=self.seed_url)
+            analyzer.addEmails(new_emails)
+            analyzer.addResponse(url_ops.response)
 
             new_links = url_ops.find_links()
-            self.enqueue_new_urls(url_ops, new_links, level)
+            self.enqueue_new_urls(url_ops.url_extras, new_links, level)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
         return 0
