@@ -98,6 +98,9 @@ class BloggerCrawler(object):
     def start(self):
         self.crawl()
 
+    def should_process_domain(self):
+        pass
+
     #process URL only if base url has occurred less than or equal to configurable limit
     def should_process_url(self, base_url):
         if base_url in self.url_count_map:
@@ -126,8 +129,8 @@ class BloggerCrawler(object):
             # add to processed immediately, to support failure
             self.processed_urls.add(url)
 
-            url_extras = get_url_extras(url)
-            if not self.should_process_url(url_extras[1]):
+            url_extras = UrlExtras(url)
+            if not self.should_process_url(url_extras.base_url):
                 continue
 
             response = get_url_response(url)
