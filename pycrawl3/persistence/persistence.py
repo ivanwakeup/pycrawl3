@@ -44,6 +44,29 @@ class SeedDelegate(object):
         seed.save()
 
 
+class BloggerDelegate(object):
+
+    __writer = None
+
+    def __init__(self, writer, blacklist=None):
+        self.__writer = writer
+        self.blacklist = blacklist
+
+    def add_seed(self, url):
+        seed_model = Seed(url=url, crawled=False)
+        self.__writer.add_data(seed_model)
+
+    @staticmethod
+    def get_seeds_to_crawl():
+        seeds = Seed.objects.filter(crawled=False)
+        return list(seeds)
+
+    @staticmethod
+    def set_crawled(seed):
+        seed.crawled = True
+        seed.save()
+
+
 class Writer(object):
 
     def __init__(self, batch_size):

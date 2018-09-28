@@ -27,7 +27,6 @@ class EmailCrawler(object):
     def start(self):
         self.crawl()
 
-
     def scrub_visited(self, linkset, to_process, processed):
         # add the new url to the queue if it was not enqueued nor processed yet
         tmp = set()
@@ -54,16 +53,15 @@ class EmailCrawler(object):
             # add to processed immediately, to support failure
             self.processed_urls.add(url)
 
-            url_extras = get_url_extras(url)
-            if not self.should_process_url(url_extras[1]):
+            url_ops = UrlOps(url)
+            if not self.should_process_url(url_ops.url_extras.base_url):
                 continue
 
-            response = get_url_response(url)
-            if not response or not response.ok:
+            if not url_ops.response or not url_ops.response.ok:
                 continue
 
             try:
-                new_emails = find_emails(response)
+                new_emails = url_ops.find_emails()
                 if len(new_emails) > self.config.max_emails_per_page:
                     continue
             except TimeoutError:
@@ -72,7 +70,7 @@ class EmailCrawler(object):
             for email in new_emails:
                 self.delegate.add_email(email, url, seed=self.seed_url)
 
-            new_links = find_links(response, url_extras, self.blacklist)
+            new_links = url_ops.find_links(self.blacklist)
             for link in new_links:
                 #only add link if crawler depth is low enough
                 if link not in self.processed_urls and level < self.config.crawler_depth:
@@ -98,8 +96,10 @@ class BloggerCrawler(object):
     def start(self):
         self.crawl()
 
-    def should_process_domain(self):
-        pass
+    def should_process_domain(self, base_url):
+        if not self.blacklist.is_blacklisted(base_url):
+            return True
+        return False
 
     #process URL only if base url has occurred less than or equal to configurable limit
     def should_process_url(self, base_url):
@@ -110,45 +110,51 @@ class BloggerCrawler(object):
             else:
                 self.url_count_map[base_url] += 1
         else:
-            self.url_count_map[base_url] = 1
-        return True
+            if self.should_process_domain(base_url):
+                self.url_count_map[base_url] = 1
+                return True
+        return False
 
     def enqueue_new_urls(self, url_extras, new_urls, level):
         for link in new_urls:
-            new_extras = get_url_extras(link)
+            new_extras = UrlExtras(link)
             if link not in self.processed_urls and level < self.config.crawler_depth:
                 #append websites from the same domain to the start of the queue
-                if url_extras[1] == new_extras[1]:
+                if url_extras.base_url == new_extras.base_url:
                     self.url_queue.append((link, level))
                 else:
                     self.url_queue.appendleft((link, level+1))
 
     def crawl(self):
+        analyzer = BloggerDomainAnalyzer()
+        start_url = UrlExtras(self.url_queue[-1])
+
         while self.url_queue:
             url, level = self.url_queue.pop()
             # add to processed immediately, to support failure
             self.processed_urls.add(url)
+            url_ops = UrlOps(url)
 
-            url_extras = UrlExtras(url)
-            if not self.should_process_url(url_extras.base_url):
+            #if we're done processing this domain, refresh the analyzer
+            if not start_url.base_url == url_ops.url_extras.base_url:
+                analyzer.flush()
+
+            if not self.should_process_url(url_ops.url_extras.base_url):
                 continue
 
-            response = get_url_response(url)
-            if not response or not response.ok:
+            if not url_ops.response or not url_ops.response.ok:
                 continue
 
             try:
-                new_emails = find_emails(response)
-                if len(new_emails) > self.config.max_emails_per_page:
-                    continue
+                new_emails = url_ops.find_emails()
             except TimeoutError:
                 continue
 
             for email in new_emails:
                 self.delegate.add_email(email, url, seed=self.seed_url)
 
-            new_links = find_links(response, url_extras)
-            self.enqueue_new_urls(url_extras, new_links, level)
+            new_links = url_ops.find_links()
+            self.enqueue_new_urls(url_ops, new_links, level)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
         return 0

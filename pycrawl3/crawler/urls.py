@@ -16,7 +16,6 @@ class UrlExtras(object):
     def __init__(self, url):
         self.url = url
         self.__init_url_extras(url)
-        self.__init__url_response(url)
 
     def __init_url_extras(self, url):
         parts = urlparse(url)
@@ -30,6 +29,26 @@ class UrlExtras(object):
         self.base_url = base_url
         self.path = path
         self.base_url_no_scheme = no_scheme
+
+    @staticmethod
+    def get_base_url(url):
+        parts = urlparse(url)
+        try:
+            base_url = "{0.scheme}://{0.netloc}".format(parts)
+            no_scheme = parts[1]
+        except UnicodeEncodeError:
+            base_url = None
+
+
+
+class UrlOps(object):
+    url_extras = None
+    response = None
+
+    def __init__(self, url):
+        self.url = url
+        self.url_extras = UrlExtras(url)
+        self.__init__url_response(url)
 
     def __init__url_response(self, url):
         log.info("Processing %s" % url)
@@ -46,9 +65,9 @@ class UrlExtras(object):
             r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.com", self.response.text, re.I))
         return emails
 
-    def find_links(self, html, blacklist=None):
-        log.debug("Creating BeautifulSoup for %s" % self.base_url)
-        soup = BeautifulSoup(html.text, "html.parser")
+    def find_links(self, blacklist=None):
+        log.debug("Creating BeautifulSoup for %s" % self.url_extras.base_url)
+        soup = BeautifulSoup(self.response.text, "html.parser")
         links = set()
         # find and process all the anchors in the document
         for anchor in soup.find_all("a"):
@@ -56,9 +75,9 @@ class UrlExtras(object):
             link = anchor.attrs["href"] if "href" in anchor.attrs else ''
             # resolve relative links
             if link.startswith('/'):
-                link = self.base_url + link
+                link = self.url_extras.base_url + link
             elif not link.startswith('http'):
-                link = self.path + link
+                link = self.url_extras.path + link
 
             if blacklist:
                 if not blacklist.is_blacklisted(link):

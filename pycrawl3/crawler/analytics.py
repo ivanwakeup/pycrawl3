@@ -73,7 +73,7 @@ def contains_month(word):
 def filter_words(word_list):
     result = []
     for word in word_list:
-        if contains_stop_word(word) or contains_short_word(word) or word.isdigit() or contains_month(word):
+        if word.isdigit() or contains_month(word):
             continue
         result.append(word)
     return result
