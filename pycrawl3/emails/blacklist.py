@@ -15,13 +15,15 @@ class Blacklist(object):
     def remove_blacklisted(self):
         return [x for x in self.scrub_list if not self.is_blacklisted(x)]
 
-    def factory(type, scrub_list=None):
+    def factory(type, scrub_list=None, file=None):
         if type == "url":
             return UrlBlacklist(scrub_list)
         if type == "ext":
             return ExtensionBlacklist(scrub_list)
         if type == "emails":
             return EmailBlacklist(scrub_list)
+        if type == "file":
+            return FileBlacklist(file)
 
     factory = staticmethod(factory)
 
@@ -59,3 +61,21 @@ class ExtensionBlacklist(Blacklist):
 
     def __init__(self, scrub_list):
         super(ExtensionBlacklist, self).__init__(self.blacklist, scrub_list)
+
+
+class FileBlacklist(object):
+    blacklist = set()
+
+    def __init__(self, file):
+        self.__init_read_blacklist(file)
+
+    def __init_read_blacklist(self, file):
+        f = open(file, 'r')
+        for line in f:
+            self.blacklist.add(line.lower().strip())
+        f.close()
+
+    def is_blacklisted(self, item):
+        if item in self.blacklist:
+            return True
+        return False

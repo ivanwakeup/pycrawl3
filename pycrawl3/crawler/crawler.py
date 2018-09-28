@@ -84,7 +84,7 @@ class EmailCrawler(object):
 
 class BloggerCrawler(object):
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig()):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=10, depth=4)):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -114,6 +114,7 @@ class BloggerCrawler(object):
         for link in new_urls:
             new_extras = get_url_extras(link)
             if link not in self.processed_urls and level < self.config.crawler_depth:
+                #append websites from the same domain to the start of the queue
                 if url_extras[1] == new_extras[1]:
                     self.url_queue.append((link, level))
                 else:
