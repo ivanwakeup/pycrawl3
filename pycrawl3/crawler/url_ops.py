@@ -4,6 +4,8 @@ import requests
 import requests.exceptions
 from bs4 import BeautifulSoup
 from pycrawl3.utils.logger import log
+from bs4.element import Comment
+from collections import Counter
 
 
 def get_url_extras(url):
@@ -58,6 +60,60 @@ def find_links(text, url_extras, blacklist=None):
     return links
 
 
+def get_visible_text(body):
+    def tag_visible(element):
+        if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+            return False
+        if isinstance(element, Comment):
+            return False
+        return True
+    soup = BeautifulSoup(body, 'html.parser')
+    texts = soup.findAll(text=True)
+    visible_texts = filter(tag_visible, texts)
+    return u" ".join(str(t.strip()) for t in visible_texts)
+
+
+def get_word_list(text_string):
+    lst = re.findall(r'\b\w+', text_string)
+    lst = [x.lower() for x in lst]
+    return lst
+
+
+def get_word_count(word_list, minimum_count=0):
+    counter = Counter(word_list)
+    occs = [(word, count) for word, count in counter.items() if count > minimum_count]
+    return occs
+
+
+def contains_stop_word(word):
+    stop_words = "a|an|and|are|as|at|be|by|for|from|has|he|in|is|it|its|of|on|that|the|to|was|were|will|with"
+    stop_set = set(stop_words.split("|"))
+    if word in stop_set:
+        return True
+    return False
+
+
+def contains_short_word(word, length=2):
+    if len(word) <= length:
+        return True
+    return False
+
+
+def contains_month(word):
+    months = set(["january", "february", "march", "april", "may", "june", "july",
+                  "august", "september", "october", "november", "december"])
+    if word in months:
+        return True
+    return False
+
+
+def filter_words(word_list):
+    result = []
+    for word in word_list:
+        if word.isdigit() or contains_month(word):
+            continue
+        result.append(word)
+    return result
 
 
 

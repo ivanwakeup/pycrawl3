@@ -1,6 +1,6 @@
 from ..utils.timeout import TimeoutError
 from collections import deque
-from pycrawl3.crawler.urls import *
+from pycrawl3.crawler.url_ops import *
 from pycrawl3.crawler.analyzer import BloggerDomainAnalyzer
 
 
@@ -107,14 +107,14 @@ class BloggerCrawler(object):
             new_extras = get_url_extras(url)
             if url not in self.processed_urls and level < self.config.crawler_depth:
                 #append websites from the same domain to the start of the queue
-                if self.should_process_domain(new_extras[4]):
-                    if curr_base_url == new_extras[1]:
-                        self.url_queue.append((url, level))
-                    else:
-                        self.url_queue.appendleft((url, level+1))
+                if curr_base_url == new_extras[1]:
+                    self.url_queue.append((url, level))
+                else:
+                    self.url_queue.appendleft((url, level+1))
 
     def crawl(self):
         analyzer = BloggerDomainAnalyzer()
+        start_url_extras = get_url_extras(self.url_queue[-1][0])
 
         while self.url_queue:
             url, level = self.url_queue.pop()
@@ -122,9 +122,12 @@ class BloggerCrawler(object):
             self.processed_urls.add(url)
             url_extras = get_url_extras(url)
 
-            #if we're done processing this domain, refresh the analyzer
             if not self.should_process_domain(url_extras[4]):
+                continue
+
+            if start_url_extras[4] != url_extras[4]:
                 analyzer.flush()
+                start_url_extras = url_extras
 
             response = get_url_response(url)
             if not response or not response.ok:

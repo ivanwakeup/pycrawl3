@@ -1,5 +1,5 @@
 import unittest
-from pycrawl3.crawler.analytics import *
+from pycrawl3.crawler.url_ops import *
 
 
 class TestAnalytics(unittest.TestCase):
@@ -7,6 +7,7 @@ class TestAnalytics(unittest.TestCase):
     url = 'http://oxfordclothbuttondown.com/2018/08/ocbd-wears-denim/'
     response = get_url_response(url)
     visible_text = get_visible_text(response.text)
+    print(visible_text)
     word_list = get_word_list(visible_text)
 
     def test_get_words_from_html(self):
