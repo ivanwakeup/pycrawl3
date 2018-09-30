@@ -25,8 +25,8 @@
 Usage: build_dict.py -o <output file> -s <stopwords file> <list of files>
 '''
 
-from tagger import Stemmer
-from extras import SimpleReader
+from .tagger import Stemmer
+from .extras import SimpleReader
 
 
 def build_dict(corpus, stopwords=None, measure='IDF'):
@@ -53,7 +53,7 @@ def build_dict(corpus, stopwords=None, measure='IDF'):
         total_count = float(len(words))
         scale = math.log(total_count)
     
-        for w, cnt in term_count.iteritems():
+        for w, cnt in term_count.items():
             dictionary[w] = math.log(total_count / (cnt + 1)) / scale
 
     elif measure == 'IDF':
@@ -67,7 +67,7 @@ def build_dict(corpus, stopwords=None, measure='IDF'):
             for w in words:
                 term_count[w] += 1
 
-        for w, cnt in term_count.iteritems():
+        for w, cnt in term_count.items():
             dictionary[w] = math.log(corpus_size / (cnt + 1)) / scale
             
     if stopwords:
@@ -96,7 +96,7 @@ def build_dict_from_files(output_file, corpus_files, stopwords_file=None,
 
     import pickle
 
-    if verbose: print 'Processing corpus...'
+    if verbose: print('Processing corpus...')
     corpus = []
     for doc in corpus_files:
         corpus.append(reader(doc.read()))
@@ -104,11 +104,11 @@ def build_dict_from_files(output_file, corpus_files, stopwords_file=None,
 
     stopwords = None
     if stopwords_file:
-        if verbose: print 'Processing stopwords...'
+        if verbose: print('Processing stopwords...')
         stopwords = reader(stopwords_file.read())
         stopwords = [w.stem for w in map(stemmer, stopwords)]
 
-    if verbose: print 'Building dictionary... '
+    if verbose: print('Building dictionary... ')
     dictionary = build_dict(corpus, stopwords, measure)
     pickle.dump(dictionary, output_file, -1) 
     
@@ -124,7 +124,7 @@ if __name__ == '__main__':
         stopwords_file = options[0][1][1]
         corpus = options[1]
     except:
-        print __doc__
+        print(__doc__)
         exit(1)
     
     corpus = [open(doc, 'r') for doc in corpus]

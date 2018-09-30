@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-from Tkinter import *
-import tkMessageBox
-import ScrolledText
+from tkinter import *
+import tkinter.messagebox
+import tkinter.scrolledtext
 
-from tagger import *
-from extras import UnicodeReader
+from .tagger import *
+from .extras import UnicodeReader
 
 import pickle
 
@@ -16,13 +16,13 @@ tagger = Tagger(UnicodeReader(), Stemmer(), Rater(weights))
 top = Tk()
 top.title('tagger')
 
-st = ScrolledText.ScrolledText(top)
+st = tkinter.scrolledtext.ScrolledText(top)
 st.pack()
 
 def tag():
    tags = tagger(st.get(1.0, END))
    output = ', '.join(t.string for t in tags)
-   tkMessageBox.showinfo('Tags:', output)
+   tkinter.messagebox.showinfo('Tags:', output)
    st.delete(1.0, END)
 
 b = Button(top, text ='TAG!', command=tag)

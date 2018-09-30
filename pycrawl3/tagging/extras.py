@@ -19,7 +19,7 @@
 # THE SOFTWARE
 
 
-from tagger import *
+from .tagger import *
 
 
 class UnicodeReader(Reader):
@@ -31,7 +31,7 @@ class UnicodeReader(Reader):
     def __call__(self, text):
         import unicodedata
 
-        text = unicode(text)
+        text = str(text)
         text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
         return Reader.__call__(self, text)
 
@@ -100,7 +100,7 @@ def build_dict_from_nltk(output_file, corpus=None, stopwords=None,
                         on screen
     '''
     
-    from build_dict import build_dict
+    from .build_dict import build_dict
     import nltk
     import pickle
 
@@ -112,16 +112,16 @@ def build_dict_from_nltk(output_file, corpus=None, stopwords=None,
 
     corpus_list = []
     
-    if verbose: print 'Processing corpus...'
+    if verbose: print('Processing corpus...')
     for file in corpus.fileids():
         doc = [stemmer(Tag(w.lower())).stem for w in corpus.words(file)
                if w[0].isalpha()]
         corpus_list.append(doc)
 
-    if verbose: print 'Processing stopwords...'
+    if verbose: print('Processing stopwords...')
     stopwords = [stemmer(Tag(w.lower())).stem for w in stopwords]
 
-    if verbose: print 'Building dictionary... '
+    if verbose: print('Building dictionary... ')
     dictionary = build_dict(corpus_list, stopwords, measure)
     pickle.dump(dictionary, output_file, -1) 
 

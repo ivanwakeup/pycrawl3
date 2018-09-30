@@ -84,6 +84,7 @@ Example::
 
 import collections
 import re
+from functools import reduce
 
 
 class Tag:
@@ -344,7 +345,7 @@ class Rater:
 
         term_count = collections.Counter(multitags)
                 
-        for t, cnt in term_count.iteritems():
+        for t, cnt in term_count.items():
             t.string = clusters[t].most_common(1)[0][0]
             proper_freq = proper[t] / float(cnt)
             if proper_freq >= 0.5:
@@ -354,10 +355,10 @@ class Rater:
         # purge duplicates and one-character tags
         unique_tags = set(t for t in term_count if len(t.string) > 1)
         # remove redundant tags
-        for t, cnt in term_count.iteritems():
+        for t, cnt in term_count.items():
             words = t.stem.split()
-            for l in xrange(1, len(words)):
-                for i in xrange(len(words) - l + 1):
+            for l in range(1, len(words)):
+                for i in range(len(words) - l + 1):
                     s = Tag(' '.join(words[i:i + l]))
                     relative_freq = float(cnt) / term_count[s]
                     if ((relative_freq == 1.0 and t.proper) or
@@ -389,10 +390,10 @@ class Rater:
         
         multitags = []
         
-        for i in xrange(len(tags)):
+        for i in range(len(tags)):
             t = MultiTag(tags[i])
             multitags.append(t)
-            for j in xrange(1, self.multitag_size):
+            for j in range(1, self.multitag_size):
                 if t.terminal or i + j >= len(tags):
                     break
                 else:
@@ -432,7 +433,7 @@ class Tagger:
         ''' 
 
         tags = self.reader(text)
-        tags = map(self.stemmer, tags)
+        tags = list(map(self.stemmer, tags))
         tags = self.rater(tags)
 
         return tags[:tags_number]
@@ -446,18 +447,17 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) < 2:
-        print 'No arguments given, running tests: '
+        print('No arguments given, running tests: ')
         documents = glob.glob('tests/*')
     else:
         documents = sys.argv[1:]
     
-    print 'Loading dictionary... '
+    print('Loading dictionary... ')
     weights = pickle.load(open('data/dict.pkl', 'rb'))
 
     tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
     for doc in documents:
         with open(doc, 'r') as file:
-            print 'Tags for ', doc, ':'
-            print tagger(file.read())
-          
+            print(('Tags for ', doc, ':'))
+            print((tagger(file.read())))
