@@ -83,3 +83,5 @@ reddit mail
 featured by
 favorite
 event
+faq
+downloads
