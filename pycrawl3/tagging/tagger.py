@@ -309,7 +309,7 @@ class Rater:
     tries to discard redundant tags)
     '''
 
-    def __init__(self, weights, multitag_size=3):
+    def __init__(self, weights, multitag_size=2):
         '''
         @param weights:       a dictionary of weights normalized in the
                               interval [0,1]
@@ -424,7 +424,7 @@ class Tagger:
         self.stemmer = stemmer
         self.rater = rater
 
-    def __call__(self, text, tags_number=10):
+    def __call__(self, text, tags_number=15):
         '''
         @param text:        the string of text to be tagged
         @param tags_number: number of best tags to be returned
