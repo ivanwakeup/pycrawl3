@@ -57,7 +57,6 @@ class BloggerDelegate(object):
         self.__writer.add_data(seed_model)
 
     def addBlogger(self, seed, domain, email, tags, tier):
-        email = Email(email, seed, domain, tier)
         blogger = Blogger(email, domain, tags)
         self.__writer.add_data(blogger)
 
@@ -120,5 +119,8 @@ class PostgresWriter(Writer):
     def write(self):
         log.info("WRITING BATCH TO DB!!!!")
         for model in self.data:
-            model.save()
+            try:
+                model.save()
+            except Exception as e:
+                log.info("FAILED TO WRITE RECORD: {} WITH EXCEPTION: {}".format(model, e))
         self.empty_data()

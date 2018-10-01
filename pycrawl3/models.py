@@ -28,7 +28,7 @@ class Blogger(models.Model):
     domain = models.CharField("Domain", max_length=1000, null=True)
     tags = models.CharField("Tags", max_length=1000, null=True)
     modified_count = models.IntegerField(default=0)
-    created_time = models.DateTimeField("Created Time", auto_now_add=True)
+    created_time = models.DateTimeField("Created Time", auto_now_add=True, null=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)
 
     def save(self, *args, **kwargs):
