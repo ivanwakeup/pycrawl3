@@ -436,7 +436,7 @@ class Tagger:
         tags = list(map(self.stemmer, tags))
         tags = self.rater(tags)
 
-        return tags[:tags_number]
+        return list(tags[:tags_number])
 
 
 
