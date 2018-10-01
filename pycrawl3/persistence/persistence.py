@@ -1,5 +1,5 @@
 from os.path import expanduser
-from ..models import Email, Seed
+from ..models import Email, Seed, Blogger
 from django.db import transaction
 from ..utils.logger import log
 from django.db.utils import OperationalError
@@ -55,6 +55,11 @@ class BloggerDelegate(object):
     def add_seed(self, url):
         seed_model = Seed(url=url, crawled=False)
         self.__writer.add_data(seed_model)
+
+    def addBlogger(self, seed, domain, email, tags, tier):
+        email = Email(email, seed, domain, tier)
+        blogger = Blogger(email, domain, tags)
+        self.__writer.add_data(blogger)
 
     @staticmethod
     def get_seeds_to_crawl():
@@ -115,8 +120,5 @@ class PostgresWriter(Writer):
     def write(self):
         log.info("WRITING BATCH TO DB!!!!")
         for model in self.data:
-            try:
-                model.save()
-            except OperationalError:
-                continue
+            model.save()
         self.empty_data()

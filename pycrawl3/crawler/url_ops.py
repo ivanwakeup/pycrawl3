@@ -26,7 +26,7 @@ def get_url_response(url):
     log.info("Processing %s" % url)
     try:
         response = requests.get(url, timeout=3)
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, UnicodeError) as e:
         log.debug("{} failed: {}".format(url, str(e)))
         response = None
         log.debug("done processing")

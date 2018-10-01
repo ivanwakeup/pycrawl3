@@ -88,6 +88,27 @@ $("#start-crawls").click(function() {
 
 });
 
+$("#start-blogger-crawls").click(function() {
+    var url = "/start-blogger-crawl"
+
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: function(data){
+            if(data.success) {
+                toastr.success(data.message);
+                setTimeout(function() {
+		            window.location.href = '/';
+	            }, 2000);
+            }
+            else {
+                toastr.error(data.message);
+            }
+        }
+    });
+
+});
+
 
 $("#get-csv").click(function() {
     var url = "/get-emails-csv"

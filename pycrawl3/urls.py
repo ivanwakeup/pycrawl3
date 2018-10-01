@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views.index import index, crawl, add_seed_url, start_crawl, get_emails_as_csv
+from .views.index import index, crawl, add_seed_url, start_crawl, get_emails_as_csv, start_blogger_crawl
 from .views.search import search_google
 
 urlpatterns = [
@@ -23,6 +23,7 @@ urlpatterns = [
     path('crawl', crawl, name='crawl'),
     path('add-seed', add_seed_url, name='add-seed'),
     path('start-crawl', start_crawl, name='start-crawl'),
+    path('start-blogger-crawl', start_blogger_crawl, name='start-blogger-crawl'),
     path('get-emails-csv', get_emails_as_csv, name='get-emails-csv'),
     path('search-google', search_google, name="search_google"),
     path('', index, name='index')

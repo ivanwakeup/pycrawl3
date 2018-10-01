@@ -1,0 +1,11 @@
+true
+false
+jpg
+.jpg
+png
+.png
+mp3
+.mp3
+cookies
+website
+email address

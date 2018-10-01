@@ -1,4 +1,4 @@
-from ..utils.timeout import TimeoutError
+from pycrawl3.utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.url_ops import *
 from pycrawl3.crawler.analyzer import BloggerDomainAnalyzer
@@ -76,7 +76,7 @@ class EmailCrawler(object):
 
 class BloggerCrawler(object):
 
-    def __init__(self, seed, url_blacklist, delegate=None, crawler_config=CrawlerConfig(limit=5, depth=4)):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -91,8 +91,9 @@ class BloggerCrawler(object):
         self.crawl()
 
     #process URL only if base url has occurred less than or equal to configurable limit
-    def should_process_domain(self, domain):
-        if domain.endswith(('.pdf', '.jpg', '.mp3', '.png', '#')):
+    def should_process_domain(self, url_extras):
+        domain = url_extras[4]
+        if url_extras[0].endswith(('.pdf', '.jpg', '.mp3', '.png', '#')):
             return False
         if domain in self.url_count_map:
             if self.url_count_map[domain] >= self.config.url_occurence_limit:
@@ -124,10 +125,13 @@ class BloggerCrawler(object):
             self.processed_urls.add(url)
             url_extras = get_url_extras(url)
 
-            if not self.should_process_domain(url_extras[4]):
+            if not self.should_process_domain(url_extras):
                 continue
 
             if start_url_extras[4] != url_extras[4]:
+                domain, best_email, tags = analyzer.analyze()
+                if best_email:
+                    self.delegate.addBlogger(self.seed_url, domain, best_email, tags, tier=1)
                 analyzer.flush()
                 start_url_extras = url_extras
 

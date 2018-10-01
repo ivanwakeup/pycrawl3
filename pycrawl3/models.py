@@ -19,13 +19,18 @@ class Seed(models.Model):
     url = models.CharField("Url", primary_key=True, max_length=1000, null=False)
     crawled = models.BooleanField("Url Crawled")
     crawl_count = models.IntegerField("Crawl Count", default=0)
-    created_time = models.DateTimeField("Created Time", auto_now_add=True)
+    created_time = models.DateTimeField("Created Time", auto_now_add=True, null=True)
     modified_time = models.DateTimeField("Updated Time", auto_now=True, null=True)
 
 
 class Blogger(models.Model):
-    email = models.ForeignKey(Email, on_delete=models.CASCADE)
+    email_address = models.CharField("Email Address", max_length=1000, primary_key=True, null=False)
     domain = models.CharField("Domain", max_length=1000, null=True)
     tags = models.CharField("Tags", max_length=1000, null=True)
+    modified_count = models.IntegerField(default=0)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.modified_count += 1
+        return super(Blogger, self).save(*args, **kwargs)
