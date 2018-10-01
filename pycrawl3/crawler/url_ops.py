@@ -52,7 +52,8 @@ def find_links(text, url_extras, blacklist=None):
         elif not link.startswith('http'):
             link = url_extras[2] + link
         if blacklist:
-            if not blacklist.is_blacklisted(url_extras[4]):
+            new_url_extras = get_url_extras(link)
+            if not blacklist.is_blacklisted(new_url_extras[4]):
                 links.add(link)
         else:
             links.add(link)

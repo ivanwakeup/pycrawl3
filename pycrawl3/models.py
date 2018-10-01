@@ -25,6 +25,7 @@ class Seed(models.Model):
 
 class Blogger(models.Model):
     email = models.ForeignKey(Email, on_delete=models.CASCADE)
+    domain = models.CharField("Domain", max_length=1000, null=True)
     tags = models.CharField("Tags", max_length=1000, null=True)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)

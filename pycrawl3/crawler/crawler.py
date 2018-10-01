@@ -76,7 +76,7 @@ class EmailCrawler(object):
 
 class BloggerCrawler(object):
 
-    def __init__(self, seed, url_blacklist, delegate=None, crawler_config=CrawlerConfig(limit=10, depth=4)):
+    def __init__(self, seed, url_blacklist, delegate=None, crawler_config=CrawlerConfig(limit=5, depth=4)):
         q = deque()
         q.append(seed)
         self.seed_url = seed
@@ -92,6 +92,8 @@ class BloggerCrawler(object):
 
     #process URL only if base url has occurred less than or equal to configurable limit
     def should_process_domain(self, domain):
+        if domain.endswith(('.pdf', '.jpg', '.mp3', '.png', '#')):
+            return False
         if domain in self.url_count_map:
             if self.url_count_map[domain] >= self.config.url_occurence_limit:
                 self.url_count_map[domain] += 1
@@ -138,6 +140,7 @@ class BloggerCrawler(object):
             except TimeoutError:
                 new_emails = None
 
+            analyzer.addDomain(url_extras[1])
             analyzer.addEmails(new_emails)
             analyzer.addResponse(response)
 
