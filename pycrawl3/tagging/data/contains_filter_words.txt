@@ -1,2 +1,8 @@
 about
 contact
+license
+facebook
+twitter
+copyright
+gmail
+embed
