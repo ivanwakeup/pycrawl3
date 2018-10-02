@@ -50,7 +50,8 @@ class UrlBlacklist(Blacklist):
 
 class EmailBlacklist(Blacklist):
     blacklist = ['example', 'emails', 'support', 'domain', 'orders', 'info', 'github', 'registration', 'mozilla',
-                     'donate', 'feedback', 'newsletter', 'name', 'noreply', 'team', 'admin', 'security', 'about', 'media', 'contact', 'customer' ]
+                     'donate', 'feedback', 'newsletter', 'name', 'noreply', 'team', 'admin', 'security', 'about', 'media', 'contact', 'customer',
+                 'enablejs']
 
     def __init__(self, scrub_list=None):
         super(EmailBlacklist, self).__init__(self.blacklist, scrub_list)

@@ -1,6 +1,4 @@
 from django.db import models
-from django.utils import timezone
-
 
 class Email(models.Model):
     email_address = models.CharField("Email Address", max_length=1000, primary_key=True, null=False)
@@ -8,15 +6,8 @@ class Email(models.Model):
     from_url = models.CharField("Url Extracted From", max_length=1000, null=True)
     tier = models.IntegerField()
     modified_count = models.IntegerField(default=0)
-    created_time = models.DateTimeField("Created Time", null=True)
-    modified_time = models.DateTimeField("Modified Time", null=True)
-
-    def save(self, *args, **kwargs):
-        self.modified_count = self.modified_count + 1
-        if not self.id:
-            self.created_time = timezone.now()
-        self.modified_time = timezone.now()
-        return super(Email, self).save(*args, **kwargs)
+    created_time = models.DateTimeField("Created Time", auto_now_add=True)
+    modified_time = models.DateTimeField("Modified Time", auto_now=True)
 
 
 class Seed(models.Model):
@@ -32,12 +23,5 @@ class Blogger(models.Model):
     domain = models.CharField("Domain", max_length=1000, null=True)
     tags = models.CharField("Tags", max_length=1000, null=True)
     modified_count = models.IntegerField(default=0)
-    created_time = models.DateTimeField("Created Time", null=True)
-    modified_time = models.DateTimeField("Modified Time", null=True)
-
-    def save(self, *args, **kwargs):
-        self.modified_count = self.modified_count + 1
-        if not self.id:
-            self.created_time = timezone.now()
-        self.modified_time = timezone.now()
-        return super(Blogger, self).save(*args, **kwargs)
+    created_time = models.DateTimeField("Created Time", auto_now_add=True)
+    modified_time = models.DateTimeField("Modified Time", auto_now=True)

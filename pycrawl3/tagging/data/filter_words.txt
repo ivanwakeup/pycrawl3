@@ -56,7 +56,6 @@ margin-right
 javascript
 center
 pinterest labels
-cart
 size in
 put size
 search log
@@ -85,3 +84,9 @@ favorite
 event
 faq
 downloads
+inches height
+this blogthis
+send email
+view cart
+site
+share

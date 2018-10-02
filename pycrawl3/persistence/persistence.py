@@ -1,19 +1,28 @@
 from os.path import expanduser
-from ..models import Email, Seed, Blogger
+from pycrawl3.models import Email, Seed, Blogger
 from django.db import transaction
-from ..utils.logger import log
+from django.db.models import F
+from pycrawl3.utils.logger import log
 from django.db.utils import OperationalError
 
 
 class EmailDelegate(object):
 
-    def __init__(self, writer, blacklist=None, ranker=None):
+    def __init__(self, writer, email_blacklist, ranker=None):
         self.__writer = writer
-        self.blacklist = blacklist
+        self.blacklist = email_blacklist
         self.ranker = ranker
 
     def add_email(self, email, url, seed=None):
         if not self.blacklist.is_blacklisted(email):
+            try:
+                exists = Email.objects.get(email_address=email)
+                log.info("Email {} found, updating....".format(email))
+                exists.modified_count = F('modified_count') + 1
+                exists.save()
+                return
+            except Email.DoesNotExist:
+                pass
             email_model = Email(seed_url=seed, email_address=email.lower(), from_url=url, tier=self.get_email_tier(email))
             self.__writer.add_data(email_model)
 
@@ -57,6 +66,15 @@ class BloggerDelegate(object):
         self.__writer.add_data(seed_model)
 
     def addBlogger(self, seed, domain, email, tags, tier):
+        try:
+            exists = Blogger.objects.get(email_address=email)
+            log.info("Blogger {} found, updating....".format(email))
+            exists.modified_count = F('modified_count') + 1
+            exists.tags = tags
+            exists.save()
+            return
+        except Blogger.DoesNotExist:
+            pass
         blogger = Blogger(email, domain, tags)
         self.__writer.add_data(blogger)
 
