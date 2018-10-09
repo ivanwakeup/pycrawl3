@@ -113,3 +113,13 @@ jul
 oct
 download
 downloads
+php include_once
+img src
+news about
+contact menu
+faqs contact
+permalink reply
+read more
+about menu
+comments view
+read next
