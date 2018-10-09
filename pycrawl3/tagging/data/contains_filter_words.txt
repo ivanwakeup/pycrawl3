@@ -11,3 +11,7 @@ email
 hotmail
 yahoo
 website
+permalink
+comment
+php
+subscribe

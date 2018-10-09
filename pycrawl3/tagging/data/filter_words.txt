@@ -53,6 +53,9 @@ instagram twitter
 about blog
 auto
 margin-right
+margin-left
+margin-top
+margin-bottom
 javascript
 center
 pinterest labels
@@ -90,3 +93,23 @@ send email
 view cart
 site
 share
+permalink add
+jpg imageanchor
+include_once
+inbox
+www
+jobs
+fax
+city
+san
+disabled
+text-align
+href http
+skip
+view
+privacy policy
+sep
+jul
+oct
+download
+downloads

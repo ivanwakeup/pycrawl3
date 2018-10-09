@@ -424,7 +424,7 @@ class Tagger:
         self.stemmer = stemmer
         self.rater = rater
 
-    def __call__(self, text, tags_number=15):
+    def __call__(self, text, tags_number=20):
         '''
         @param text:        the string of text to be tagged
         @param tags_number: number of best tags to be returned

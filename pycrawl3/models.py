@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Email(models.Model):
     email_address = models.CharField("Email Address", max_length=1000, primary_key=True, null=False)
     seed_url = models.CharField("Seed Url", max_length=1000, null=True)
