@@ -105,3 +105,31 @@ class BloggerDomainAnalyzer(object):
             if self.ranker.rank_email(email) < 3:
                 return True
         return False
+
+
+class TagScrubber(object):
+
+    special_chars = set(['#', '-', '&', '\''])
+
+    def __init__(self, filter_phrases='filter_words.txt', contains_words='contains_filter_words.txt'):
+        self.filter_phrases = filter_phrases
+        self.contains_words = contains_words
+
+    def scrub_tags(self, taglist):
+        pass
+
+    @staticmethod
+    def is_foreign_language(taglist):
+        foreign_count = 0
+        for tag in taglist:
+            try:
+                tag.encode(encoding='utf-8').decode('ascii')
+            except UnicodeDecodeError:
+                foreign_count += 1
+        if foreign_count/len(taglist) > .6:
+            return True
+        return False
+
+    def remove_special(self, taglist):
+        for tag in taglist:
+            pass
