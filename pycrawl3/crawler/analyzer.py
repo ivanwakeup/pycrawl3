@@ -7,18 +7,19 @@ from pycrawl3.utils.logger import log
 from pycrawl3.crawler.blacklist import FileBlacklist
 import re
 
+DICTIONARY_BASE = BASE_DIR + '/dictionaries/'
 
-class BloggerDomainAnalyzer(object):
+
+class DomainAnalyzer(object):
     domain_doc = ""
     domain = None
     tags = None
     filter_words = set()
     best_email = None
 
-    base = BASE_DIR + '/dictionaries/'
-    ranker = EmailRanker(base + 'sales_words.txt', base + 'common_names_sorted.txt', base + 'top_sites.txt')
+    ranker = EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt', DICTIONARY_BASE + 'top_sites.txt')
 
-    def __init__(self, blog_delegate=None, file=BASE_DIR+"/tagging/data/filter_words.txt"):
+    def __init__(self, blog_delegate=None, file=DICTIONARY_BASE + "/filter_words.txt"):
         self.responses = list()
         self.emails = set()
         self.delegate = blog_delegate
@@ -109,9 +110,109 @@ class BloggerDomainAnalyzer(object):
         return False
 
 
+class BloggerDomainAnalyzer(object):
+    domain_doc = ""
+    domain = None
+    tags = None
+    filter_words = set()
+    best_email = None
+
+
+    def __init__(self, email_ranker=None, tag_scrubber=None):
+        self.responses = list()
+        self.emails = set()
+        self.emailranker = email_ranker
+        self.tagscrubber = tag_scrubber
+        if not self.emailranker:
+            self.emailranker = EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt', DICTIONARY_BASE + 'top_sites.txt')
+        if not self.tagscrubber:
+            self.tagscrubber = TagScrubber()
+
+    def addEmails(self, emails):
+        self.emails.update(emails)
+
+    def addDomain(self, domain):
+        if not self.domain:
+            self.domain = domain
+
+    def addResponse(self, response):
+        self.responses.append(response)
+
+    def __init_filter_words(self, file):
+        f = open(file, 'r')
+        for line in f:
+            self.filter_words.add(line.lower().strip())
+        f.close()
+
+    def analyze(self):
+        for email in self.emails:
+            if self.ranker.rank_email(email) == 1:
+                self.best_email = email
+                self.__build_doc()
+                self.__build_tags()
+                self.__clean_tags()
+                print(self.domain, self.emails, self.tags)
+        return self.domain, self.best_email, self.tags
+
+    def flush(self):
+        self.cleanup()
+
+    def __build_doc(self):
+        for response in self.responses:
+            self.domain_doc += get_visible_text(response.text)
+
+    def __build_tags(self):
+        print('Loading dictionary... ')
+        dic = BASE_DIR + "/tagging/data/dict.pkl"
+        weights = pickle.load(open(dic, 'rb'))
+
+        tagger = Tagger(Reader(), Stemmer(), Rater(weights))
+
+        self.tags = tagger(self.domain_doc)
+
+    def __clean_tags(self):
+        def has_digits(s):
+            for char in s:
+                if char.isdigit():
+                    return True
+            return False
+        def has_special(s):
+            for char in s:
+                if char in ["/"]:
+                    return True
+            return False
+        new_tags = []
+        for tag in self.tags:
+            new_tag = str(tag.string)
+            if new_tag not in self.filter_words \
+                    and not has_digits(new_tag) \
+                    and not has_special(new_tag) and len(new_tag) >= 3:
+                new_tags.append(new_tag)
+        self.tags = new_tags[:10]
+
+    def cleanup(self):
+        self.responses.clear()
+        self.emails.clear()
+        self.tags = None
+        self.domain = None
+        self.domain_doc = ""
+        self.best_email = None
+
+    def is_blog(self):
+        blog_words = ["blog", "blogger"]
+        if self.domain_doc != "":
+            for word in blog_words:
+                if word in self.domain_doc:
+                    return True
+        for email in self.emails:
+            if self.ranker.rank_email(email) < 3:
+                return True
+        return False
+
+
 class TagScrubber(object):
 
-    def __init__(self, filter_phrases=BASE_DIR+'/dictionaries/tag_filter_phrases.txt', contains_words=BASE_DIR+'/dictionaries/tag_filter_words.txt'):
+    def __init__(self, filter_phrases=DICTIONARY_BASE+'tag_filter_phrases.txt', contains_words=DICTIONARY_BASE+'tag_filter_words.txt'):
         self.filter_phrases = FileBlacklist(filter_phrases).blacklist
         self.filter_words = FileBlacklist(contains_words).blacklist
 

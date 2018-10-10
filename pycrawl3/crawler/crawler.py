@@ -1,7 +1,7 @@
 from pycrawl3.utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.url_ops import *
-from pycrawl3.crawler.analyzer import BloggerDomainAnalyzer
+from pycrawl3.crawler.analyzer import DomainAnalyzer
 
 
 class CrawlerConfig(object):
@@ -116,7 +116,7 @@ class BloggerCrawler(object):
                     self.url_queue.appendleft((url, level+1))
 
     def crawl(self):
-        analyzer = BloggerDomainAnalyzer()
+        analyzer = DomainAnalyzer()
         start_url_extras = get_url_extras(self.url_queue[-1][0])
 
         while self.url_queue:
@@ -168,7 +168,7 @@ class DomainCrawler(object):
         self.crawl()
 
     def crawl(self):
-        analyzer = BloggerDomainAnalyzer()
+        analyzer = DomainAnalyzer()
 
         while self.url_queue:
             url, level = self.url_queue.pop()
