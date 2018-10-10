@@ -1,5 +1,6 @@
 import unittest
-from pycrawl3.crawler.analyzer import TagScrubber
+from pycrawl3.crawler.analyzer import TagScrubber, BloggerDomainAnalyzer
+from pycrawl3.crawler.crawler import BloggerDomainCrawler
 
 
 class TestCrawler(unittest.TestCase):
@@ -14,3 +15,10 @@ class TestCrawler(unittest.TestCase):
 
         self.assertTrue(scrubber.is_foreign_language(['augusztus', 'hímzett', 'megosztás', 'július',
                                              'március', 'február', 'október', 'szeptember', 'április', 'május']))
+
+    def test_blogger_domain_analyzer(self):
+        analyzer = BloggerDomainAnalyzer()
+        url = "http://www.restaurantauctionslist.com"
+        crawler = BloggerDomainCrawler(url, analyzer)
+        data = crawler.start()
+        print(data)

@@ -98,29 +98,33 @@ class DomainAnalyzer(object):
         self.domain_doc = ""
         self.best_email = None
 
-    def is_blog(self):
-        blog_words = ["blog", "blogger"]
-        if self.domain_doc != "":
-            for word in blog_words:
-                if word in self.domain_doc:
-                    return True
-        for email in self.emails:
-            if self.ranker.rank_email(email) < 3:
-                return True
-        return False
+
+class BloggerDomainData:
+
+    def __init__(self, **kwargs):
+        allowed_keys = [
+            'ranked_emails',
+            'domain',
+            'found_impressions',
+            'found_ads',
+            'tags',
+            'category',
+            'found_phone'
+        ]
+        self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
 
 class BloggerDomainAnalyzer(object):
-    domain_doc = ""
-    domain = None
-    tags = None
-    filter_words = set()
-    best_email = None
-
 
     def __init__(self, email_ranker=None, tag_scrubber=None):
         self.responses = list()
         self.emails = set()
+        self.domain_doc = ""
+        self.domain = None
+        self.tags = None
+        self.found_impressions = None
+        self.found_ads = None
+        self.category = None
         self.emailranker = email_ranker
         self.tagscrubber = tag_scrubber
         if not self.emailranker:
@@ -128,34 +132,41 @@ class BloggerDomainAnalyzer(object):
         if not self.tagscrubber:
             self.tagscrubber = TagScrubber()
 
-    def addEmails(self, emails):
+    def analyze(self):
+        ranked_emails = self.rank_emails()
+        self.__build_tags()
+        self.__build_doc()
+        scrubbed_tags = self.tagscrubber.scrub_tags(self.tags)
+        self.__analyze_words()
+        data = BloggerDomainData(ranked_emails=ranked_emails, domain=self.domain, tags=scrubbed_tags, category=self.category)
+        self.cleanup()
+        return data
+
+    def cleanup(self):
+        self.responses.clear()
+        self.emails.clear()
+        self.tags = None
+        self.domain = None
+        self.domain_doc = ""
+        self.found_impressions = None
+        self.found_ads = None
+        self.category = None
+
+    def add_emails(self, emails):
         self.emails.update(emails)
 
-    def addDomain(self, domain):
+    def add_domain(self, domain):
         if not self.domain:
             self.domain = domain
 
-    def addResponse(self, response):
+    def add_response(self, response):
         self.responses.append(response)
 
-    def __init_filter_words(self, file):
-        f = open(file, 'r')
-        for line in f:
-            self.filter_words.add(line.lower().strip())
-        f.close()
-
-    def analyze(self):
+    def rank_emails(self):
+        ranked = []
         for email in self.emails:
-            if self.ranker.rank_email(email) == 1:
-                self.best_email = email
-                self.__build_doc()
-                self.__build_tags()
-                self.__clean_tags()
-                print(self.domain, self.emails, self.tags)
-        return self.domain, self.best_email, self.tags
-
-    def flush(self):
-        self.cleanup()
+            ranked.append((email, self.emailranker.rank_email(email)))
+        return sorted(ranked, key=lambda x: x[1])
 
     def __build_doc(self):
         for response in self.responses:
@@ -168,46 +179,18 @@ class BloggerDomainAnalyzer(object):
 
         tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
-        self.tags = tagger(self.domain_doc)
+        tags = tagger(self.domain_doc)
+        self.tags = [str(tag.string) for tag in tags]
 
-    def __clean_tags(self):
-        def has_digits(s):
-            for char in s:
-                if char.isdigit():
-                    return True
-            return False
-        def has_special(s):
-            for char in s:
-                if char in ["/"]:
-                    return True
-            return False
-        new_tags = []
-        for tag in self.tags:
-            new_tag = str(tag.string)
-            if new_tag not in self.filter_words \
-                    and not has_digits(new_tag) \
-                    and not has_special(new_tag) and len(new_tag) >= 3:
-                new_tags.append(new_tag)
-        self.tags = new_tags[:10]
-
-    def cleanup(self):
-        self.responses.clear()
-        self.emails.clear()
-        self.tags = None
-        self.domain = None
-        self.domain_doc = ""
-        self.best_email = None
-
-    def is_blog(self):
-        blog_words = ["blog", "blogger"]
-        if self.domain_doc != "":
-            for word in blog_words:
-                if word in self.domain_doc:
-                    return True
-        for email in self.emails:
-            if self.ranker.rank_email(email) < 3:
-                return True
-        return False
+    def __analyze_words(self):
+        word_list = get_word_list(self.domain_doc)
+        counts = Counter(word_list)
+        ad_words = ["advertising", "advertise"]
+        for word in ad_words:
+            if word in counts:
+                self.found_ads = True
+        if "impressions" in counts:
+            self.found_impressions = True
 
 
 class TagScrubber(object):
@@ -219,7 +202,9 @@ class TagScrubber(object):
     def scrub_tags(self, taglist):
         if self.is_foreign_language(taglist):
             return []
-        result = self.remove_special(taglist)
+        result = self.filterdigits(taglist)
+        result = self.filtershorttags(result)
+        result = self.remove_special(result)
         result = self.filterwords(self.filter_words, result)
         result = self.filterphrases(self.filter_phrases, result)
         result = self.dedupe_and_strip(result)
@@ -239,7 +224,7 @@ class TagScrubber(object):
 
     @staticmethod
     def remove_special(taglist):
-        special_regex = r"(^&|&$|^-|-$|#|^'|'$)"
+        special_regex = r"(^\/|^&|&$|^-|-$|#|^'|'$)"
         for i in range(len(taglist)):
             taglist[i] = re.sub(special_regex, '', taglist[i]).strip()
 
@@ -251,6 +236,21 @@ class TagScrubber(object):
             for word in contains_words:
                 if word in taglist[i]:
                     taglist[i] = taglist[i].replace(word, '').strip()
+        return taglist
+
+    @staticmethod
+    def filterdigits(taglist):
+        for tag in taglist:
+            for char in tag:
+                if char.isdigit():
+                    taglist.remove(tag)
+        return taglist
+
+    @staticmethod
+    def filtershorttags(taglist):
+        for tag in taglist:
+            if len(tag) <= 3:
+                taglist.remove(tag)
         return taglist
 
     @staticmethod

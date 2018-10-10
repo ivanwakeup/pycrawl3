@@ -1,7 +1,7 @@
 from pycrawl3.utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.url_ops import *
-from pycrawl3.crawler.analyzer import DomainAnalyzer
+from pycrawl3.crawler.analyzer import DomainAnalyzer, BloggerDomainAnalyzer
 
 
 class CrawlerConfig(object):
@@ -155,20 +155,20 @@ class BloggerCrawler(object):
         return 0
 
 
-class DomainCrawler(object):
+class BloggerDomainCrawler(object):
 
-    def __init__(self, seed_url):
+    def __init__(self, seed_url, analyzer=BloggerDomainAnalyzer()):
         q = deque()
         q.append(seed_url)
         self.seed_url = seed_url
         self.url_queue = q
         self.pages_processed = 0
+        self.analyzer = analyzer
 
     def start(self):
-        self.crawl()
+        return self.crawl()
 
     def crawl(self):
-        analyzer = DomainAnalyzer()
 
         while self.url_queue:
             url, level = self.url_queue.pop()
@@ -184,9 +184,9 @@ class DomainCrawler(object):
             except TimeoutError:
                 new_emails = None
 
-            analyzer.addDomain(url_extras[1])
-            analyzer.addEmails(new_emails)
-            analyzer.addResponse(response)
+            self.analyzer.add_domain(url_extras[1])
+            self.analyzer.add_emails(new_emails)
+            self.analyzer.add_response(response)
 
             new_links = find_links(response.text, url_extras, self.blacklist)
             for link in new_links:
@@ -194,4 +194,4 @@ class DomainCrawler(object):
                     self.url_queue.appendleft(url)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
-        return 0
+        return self.analyzer.analyze()

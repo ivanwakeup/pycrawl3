@@ -94,12 +94,6 @@ def contains_stop_word(word):
     return False
 
 
-def contains_short_word(word, length=2):
-    if len(word) <= length:
-        return True
-    return False
-
-
 def contains_month(word):
     months = set(["january", "february", "march", "april", "may", "june", "july",
                   "august", "september", "october", "november", "december"])
