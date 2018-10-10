@@ -131,3 +131,11 @@ instagram privacy
 instagram youtube
 cart cart
 href https
+cur prev
+talk contribs
+page
+bytes
+team shop
+email address
+privacy
+mailing list
