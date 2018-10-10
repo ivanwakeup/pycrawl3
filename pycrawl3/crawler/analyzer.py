@@ -110,15 +110,15 @@ class BloggerDomainAnalyzer(object):
 
 class TagScrubber(object):
 
-    def __init__(self, filter_phrases=BASE_DIR+'/dictionaries/filter_words.txt', contains_words=BASE_DIR+'/dictionaries/contains_filter_words.txt'):
+    def __init__(self, filter_phrases=BASE_DIR+'/dictionaries/tag_filter_phrases.txt', contains_words=BASE_DIR+'/dictionaries/tag_filter_words.txt'):
         self.filter_phrases = FileBlacklist(filter_phrases).blacklist
-        self.contains_words = FileBlacklist(contains_words).blacklist
+        self.filter_words = FileBlacklist(contains_words).blacklist
 
     def scrub_tags(self, taglist):
         if self.is_foreign_language(taglist):
             return []
         result = self.remove_special(taglist)
-        result = self.filterwords(self.contains_words, result)
+        result = self.filterwords(self.filter_words, result)
         result = self.filterphrases(self.filter_phrases, result)
         result = self.dedupe_and_strip(result)
         return result
