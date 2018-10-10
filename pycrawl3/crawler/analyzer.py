@@ -7,6 +7,7 @@ from pycrawl3.utils.logger import log
 from pycrawl3.crawler.blacklist import FileBlacklist
 import re
 
+
 class BloggerDomainAnalyzer(object):
     domain_doc = ""
     domain = None
@@ -14,7 +15,7 @@ class BloggerDomainAnalyzer(object):
     filter_words = set()
     best_email = None
 
-    base = BASE_DIR + '/static/pycrawl3/'
+    base = BASE_DIR + '/dictionaries/'
     ranker = EmailRanker(base + 'sales_words.txt', base + 'common_names_sorted.txt', base + 'top_sites.txt')
 
     def __init__(self, blog_delegate=None, file=BASE_DIR+"/tagging/data/filter_words.txt"):

@@ -153,3 +153,45 @@ class BloggerCrawler(object):
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
         return 0
+
+
+class DomainCrawler(object):
+
+    def __init__(self, seed_url):
+        q = deque()
+        q.append(seed_url)
+        self.seed_url = seed_url
+        self.url_queue = q
+        self.pages_processed = 0
+
+    def start(self):
+        self.crawl()
+
+    def crawl(self):
+        analyzer = BloggerDomainAnalyzer()
+
+        while self.url_queue:
+            url, level = self.url_queue.pop()
+            self.pages_processed += 1
+            url_extras = get_url_extras(url)
+
+            response = get_url_response(url)
+            if not response or not response.ok:
+                continue
+
+            try:
+                new_emails = find_emails(response.text)
+            except TimeoutError:
+                new_emails = None
+
+            analyzer.addDomain(url_extras[1])
+            analyzer.addEmails(new_emails)
+            analyzer.addResponse(response)
+
+            new_links = find_links(response.text, url_extras, self.blacklist)
+            for link in new_links:
+                if get_url_extras(link)[1] == url_extras[1]:
+                    self.url_queue.appendleft(url)
+
+        log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
+        return 0
