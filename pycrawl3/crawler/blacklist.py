@@ -70,9 +70,6 @@ class FileBlacklist(object):
     def __init__(self, file):
         self.__init_read_blacklist(file)
 
-    def __call__(self, *args, **kwargs):
-        return self.blacklist
-
     def __init_read_blacklist(self, file):
         f = open(file, 'r')
         for line in f:
@@ -83,3 +80,11 @@ class FileBlacklist(object):
         if item in self.blacklist:
             return True
         return False
+
+    @staticmethod
+    def get_blacklist_set(file):
+        result = set()
+        with open(file, 'r') as f:
+            for line in f:
+                result.add(line.lower().strip())
+        return result

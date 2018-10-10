@@ -23,6 +23,7 @@ class Blogger(models.Model):
     email_address = models.CharField("Email Address", max_length=1000, primary_key=True, null=False)
     domain = models.CharField("Domain", max_length=1000, null=True)
     tags = models.CharField("Tags", max_length=1000, null=True)
+    scrubbed_tags = models.CharField("Scrubbed Tags", max_length=1000, null=True, blank=True)
     modified_count = models.IntegerField(default=0)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)

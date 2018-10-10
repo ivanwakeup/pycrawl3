@@ -64,7 +64,8 @@ class DomainAnalyzer(object):
     def __build_tags(self):
         print('Loading dictionary... ')
         dic = BASE_DIR + "/tagging/data/dict.pkl"
-        weights = pickle.load(open(dic, 'rb'))
+        with open(dic, 'rb') as f:
+            weights = pickle.load(f)
 
         tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
@@ -134,8 +135,8 @@ class BloggerDomainAnalyzer(object):
 
     def analyze(self):
         ranked_emails = self.rank_emails()
-        self.__build_tags()
         self.__build_doc()
+        self.__build_tags()
         scrubbed_tags = self.tagscrubber.scrub_tags(self.tags)
         self.__analyze_words()
         data = BloggerDomainData(ranked_emails=ranked_emails, domain=self.domain, tags=scrubbed_tags, category=self.category)
@@ -175,7 +176,8 @@ class BloggerDomainAnalyzer(object):
     def __build_tags(self):
         print('Loading dictionary... ')
         dic = BASE_DIR + "/tagging/data/dict.pkl"
-        weights = pickle.load(open(dic, 'rb'))
+        with open(dic, 'rb') as f:
+            weights = pickle.load(f)
 
         tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
@@ -196,8 +198,9 @@ class BloggerDomainAnalyzer(object):
 class TagScrubber(object):
 
     def __init__(self, filter_phrases=DICTIONARY_BASE+'tag_filter_phrases.txt', contains_words=DICTIONARY_BASE+'tag_filter_words.txt'):
-        self.filter_phrases = FileBlacklist(filter_phrases).blacklist
-        self.filter_words = FileBlacklist(contains_words).blacklist
+        print(contains_words)
+        self.filter_words = FileBlacklist.get_blacklist_set(contains_words)
+        self.filter_phrases = FileBlacklist.get_blacklist_set(filter_phrases)
 
     def scrub_tags(self, taglist):
         if self.is_foreign_language(taglist):
@@ -218,8 +221,12 @@ class TagScrubber(object):
                 tag.encode(encoding='utf-8').decode('ascii')
             except UnicodeDecodeError:
                 foreign_count += 1
-        if foreign_count/len(taglist) > .6:
-            return True
+        try:
+            pct = foreign_count/len(taglist)
+            if pct > .6:
+                return True
+        except ZeroDivisionError:
+            return False
         return False
 
     @staticmethod
@@ -240,28 +247,20 @@ class TagScrubber(object):
 
     @staticmethod
     def filterdigits(taglist):
-        for tag in taglist:
-            for char in tag:
-                if char.isdigit():
-                    taglist.remove(tag)
-        return taglist
+        return list(filter(lambda x: not any(char.isdigit() for char in x), taglist))
+
 
     @staticmethod
     def filtershorttags(taglist):
-        for tag in taglist:
-            if len(tag) <= 3:
-                taglist.remove(tag)
-        return taglist
+        return list(filter(lambda x: not len(x) < 3, taglist))
 
     @staticmethod
     def filterphrases(filter_phrases, taglist):
-        for i in range(len(taglist)):
-            if taglist[i] in filter_phrases:
-                taglist.remove(taglist[i])
-        return taglist
+        return list(filter(lambda x: not x in filter_phrases, taglist))
 
     @staticmethod
     def dedupe_and_strip(taglist):
         taglist = [tag.strip() for tag in taglist]
+        taglist = list(filter(lambda x: not x == '', taglist))
         taglist = list(set(taglist))
         return taglist

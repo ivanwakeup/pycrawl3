@@ -157,12 +157,13 @@ class BloggerCrawler(object):
 
 class BloggerDomainCrawler(object):
 
-    def __init__(self, seed_url, analyzer=BloggerDomainAnalyzer()):
+    def __init__(self, seed_url, analyzer=BloggerDomainAnalyzer(), limit=20):
         q = deque()
         q.append(seed_url)
         self.seed_url = seed_url
         self.url_queue = q
         self.pages_processed = 0
+        self.limit = limit
         self.analyzer = analyzer
 
     def start(self):
@@ -171,8 +172,10 @@ class BloggerDomainCrawler(object):
     def crawl(self):
 
         while self.url_queue:
-            url, level = self.url_queue.pop()
+            url = self.url_queue.pop()
             self.pages_processed += 1
+            if self.pages_processed > self.limit:
+                break
             url_extras = get_url_extras(url)
 
             response = get_url_response(url)
@@ -188,10 +191,10 @@ class BloggerDomainCrawler(object):
             self.analyzer.add_emails(new_emails)
             self.analyzer.add_response(response)
 
-            new_links = find_links(response.text, url_extras, self.blacklist)
+            new_links = find_links(response.text, url_extras)
             for link in new_links:
                 if get_url_extras(link)[1] == url_extras[1]:
-                    self.url_queue.appendleft(url)
+                    self.url_queue.appendleft(link)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
         return self.analyzer.analyze()

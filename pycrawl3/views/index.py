@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from pycrawl3.crawler import crawler
-from blacklist import Blacklist
+from pycrawl3.crawler.blacklist import Blacklist
 from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, SeedDelegate, BloggerDelegate
 
 from multiprocessing import Pool
