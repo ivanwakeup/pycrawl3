@@ -4,7 +4,8 @@ from pycrawl3.tagging.tagger import Tagger, Stemmer, Reader, Rater
 from pycrawl3.emails.emails import EmailRanker
 import pickle
 from pycrawl3.utils.logger import log
-
+from pycrawl3.crawler.blacklist import FileBlacklist
+import re
 
 class BloggerDomainAnalyzer(object):
     domain_doc = ""
@@ -109,14 +110,18 @@ class BloggerDomainAnalyzer(object):
 
 class TagScrubber(object):
 
-    special_chars = set(['#', '-', '&', '\''])
-
-    def __init__(self, filter_phrases='filter_words.txt', contains_words='contains_filter_words.txt'):
-        self.filter_phrases = filter_phrases
-        self.contains_words = contains_words
+    def __init__(self, filter_phrases=BASE_DIR+'/dictionaries/filter_words.txt', contains_words=BASE_DIR+'/dictionaries/contains_filter_words.txt'):
+        self.filter_phrases = FileBlacklist(filter_phrases).blacklist
+        self.contains_words = FileBlacklist(contains_words).blacklist
 
     def scrub_tags(self, taglist):
-        pass
+        if self.is_foreign_language(taglist):
+            return []
+        result = self.remove_special(taglist)
+        result = self.filterwords(self.contains_words, result)
+        result = self.filterphrases(self.filter_phrases, result)
+        result = self.dedupe_and_strip(result)
+        return result
 
     @staticmethod
     def is_foreign_language(taglist):
@@ -130,6 +135,31 @@ class TagScrubber(object):
             return True
         return False
 
-    def remove_special(self, taglist):
-        for tag in taglist:
-            pass
+    @staticmethod
+    def remove_special(taglist):
+        special_regex = r"(^&|&$|^-|-$|#|^'|'$)"
+        for i in range(len(taglist)):
+            taglist[i] = re.sub(special_regex, '', taglist[i]).strip()
+
+        return taglist
+
+    @staticmethod
+    def filterwords(contains_words, taglist):
+        for i in range(len(taglist)):
+            for word in contains_words:
+                if word in taglist[i]:
+                    taglist[i] = taglist[i].replace(word, '').strip()
+        return taglist
+
+    @staticmethod
+    def filterphrases(filter_phrases, taglist):
+        for i in range(len(taglist)):
+            if taglist[i] in filter_phrases:
+                taglist.remove(taglist[i])
+        return taglist
+
+    @staticmethod
+    def dedupe_and_strip(taglist):
+        taglist = [tag.strip() for tag in taglist]
+        taglist = list(set(taglist))
+        return taglist

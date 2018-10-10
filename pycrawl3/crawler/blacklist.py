@@ -70,6 +70,9 @@ class FileBlacklist(object):
     def __init__(self, file):
         self.__init_read_blacklist(file)
 
+    def __call__(self, *args, **kwargs):
+        return self.blacklist
+
     def __init_read_blacklist(self, file):
         f = open(file, 'r')
         for line in f:

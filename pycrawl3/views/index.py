@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from pycrawl3.crawler import crawler
-from pycrawl3.emails.blacklist import Blacklist
+from blacklist import Blacklist
 from pycrawl3.persistence.persistence import PostgresWriter, EmailDelegate, SeedDelegate, BloggerDelegate
 
 from multiprocessing import Pool
@@ -34,7 +34,7 @@ def start_crawl(request):
     url_blacklist = Blacklist.factory("url")
     email_blacklist = Blacklist.factory("emails")
 
-    base = BASE_DIR + '/static/pycrawl3/'
+    base = BASE_DIR + '/dictionaries/'
     ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
 
     for seed in seeds:
@@ -48,7 +48,7 @@ def start_crawl(request):
 def start_blogger_crawl(request):
     seeds = SeedDelegate.get_seeds_to_crawl()
 
-    base = BASE_DIR + '/static/pycrawl3/'
+    base = BASE_DIR + '/dictionaries/'
     ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
 
     # initialize crawl package

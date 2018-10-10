@@ -3,7 +3,7 @@ django.setup()
 
 import sys
 from pycrawl3.settings.common import BASE_DIR
-from pycrawl3.emails.blacklist import FileBlacklist
+from blacklist import FileBlacklist
 from pycrawl3.crawler.crawler import BloggerCrawler
 from pycrawl3.persistence.persistence import PostgresWriter, BloggerDelegate
 
