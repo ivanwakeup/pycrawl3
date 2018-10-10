@@ -9,5 +9,8 @@ class TestCrawler(unittest.TestCase):
         words = scrubber.filter_words
         phrases = scrubber.filter_phrases
 
-        assert(scrubber.filterwords(words, ['contact mario']) == ['mario'])
-        assert(scrubber.filterphrases(phrases, ['php include_once']) == [])
+        self.assertTrue(scrubber.filterwords(words, ['contact mario']) == ['mario'])
+        self.assertTrue(scrubber.filterphrases(phrases, ['php include_once']) == [])
+
+        self.assertTrue(scrubber.is_foreign_language(['augusztus', 'hímzett', 'megosztás', 'július',
+                                             'március', 'február', 'október', 'szeptember', 'április', 'május']))
