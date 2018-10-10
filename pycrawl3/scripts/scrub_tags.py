@@ -10,14 +10,11 @@ if not settings.configured:
 
 from pycrawl3.models import Blogger
 from pycrawl3.crawler.analyzer import TagScrubber
-import ast
 
 bloggers = Blogger.objects.all()
 
 for blogger in bloggers:
-    tags = blogger.tags
-    tags = ast.literal_eval(tags)
-    blogger.tags = tags
+    tags = blogger.tags.split(",")
     scrubbed_tags = TagScrubber().scrub_tags(tags)
-    blogger.scrubbed_tags = scrubbed_tags
+    blogger.scrubbed_tags = ",".join(scrubbed_tags)
     blogger.save()
