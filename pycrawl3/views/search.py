@@ -1,6 +1,6 @@
 from google import google
 from django.shortcuts import render
-from pycrawl3.persistence.persistence import PostgresWriter, SeedDelegate
+from pycrawl3.models import Seed
 
 
 def search_google(request):
@@ -8,10 +8,12 @@ def search_google(request):
         term = request.POST.get("search-term")
         search_results = google.search(term, 1)
 
-        writer = PostgresWriter(batch_size=1)
-        delegate = SeedDelegate(writer)
-
         for result in search_results:
-            delegate.add_seed(result.link)
+            seed = Seed(
+                url=result.link,
+                search_term=term,
+                crawled=False
+            )
+            seed.save()
 
         return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})

@@ -65,17 +65,16 @@ class BloggerDelegate(object):
         seed_model = Seed(url=url, crawled=False)
         self.__writer.add_data(seed_model)
 
-    def addBlogger(self, seed, domain, email, tags, tier):
+    def add_blogger(self, blogger):
         try:
-            exists = Blogger.objects.get(email_address=email)
-            log.info("Blogger {} found, updating....".format(email))
+            exists = Blogger.objects.get(email_address=blogger.email_address)
+            log.info("Blogger {} found, updating....".format(blogger.email_address))
             exists.modified_count = F('modified_count') + 1
-            exists.tags = tags
+            exists.tags = blogger.tags
             exists.save()
             return
         except Blogger.DoesNotExist:
             pass
-        blogger = Blogger(email, domain, tags)
         self.__writer.add_data(blogger)
 
     @staticmethod

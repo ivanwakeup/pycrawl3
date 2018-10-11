@@ -11,51 +11,33 @@ DICTIONARY_BASE = BASE_DIR + '/dictionaries/'
 
 
 class DomainAnalyzer(object):
-    domain_doc = ""
-    domain = None
-    tags = None
-    filter_words = set()
-    best_email = None
 
-    ranker = EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt', DICTIONARY_BASE + 'top_sites.txt')
-
-    def __init__(self, blog_delegate=None, file=DICTIONARY_BASE + "/filter_words.txt"):
+    def __init__(self, domain, email_ranker=None):
+        self.domain_doc = ""
+        self.domain = domain
+        self.tags = None
         self.responses = list()
         self.emails = set()
-        self.delegate = blog_delegate
-        try:
-            self.__init_filter_words(file)
-        except FileNotFoundError:
-            log.info("no filter_word file found, proceeding without one...")
+        self.best_email = None
+        self.emailranker = email_ranker
+        if not self.emailranker:
+            self.emailranker = EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt',
+                                 DICTIONARY_BASE + 'top_sites.txt')
 
-    def addEmails(self, emails):
+    def add_emails(self, emails):
         self.emails.update(emails)
 
-    def addDomain(self, domain):
-        if not self.domain:
-            self.domain = domain
-
-    def addResponse(self, response):
+    def add_response(self, response):
         self.responses.append(response)
-
-    def __init_filter_words(self, file):
-        f = open(file, 'r')
-        for line in f:
-            self.filter_words.add(line.lower().strip())
-        f.close()
 
     def analyze(self):
         for email in self.emails:
-            if self.ranker.rank_email(email) == 1:
+            if self.emailranker.rank_email(email) == 1:
                 self.best_email = email
                 self.__build_doc()
                 self.__build_tags()
-                self.__clean_tags()
-                print(self.domain, self.emails, self.tags)
-        return self.domain, self.best_email, self.tags
-
-    def flush(self):
-        self.cleanup()
+                log.info((self.domain, self.emails, self.tags))
+        return self.domain, self.best_email, self.emails, self.tags
 
     def __build_doc(self):
         for response in self.responses:
@@ -71,31 +53,11 @@ class DomainAnalyzer(object):
 
         self.tags = tagger(self.domain_doc)
 
-    def __clean_tags(self):
-        def has_digits(s):
-            for char in s:
-                if char.isdigit():
-                    return True
-            return False
-        def has_special(s):
-            for char in s:
-                if char in ["/"]:
-                    return True
-            return False
-        new_tags = []
-        for tag in self.tags:
-            new_tag = str(tag.string)
-            if new_tag not in self.filter_words \
-                    and not has_digits(new_tag) \
-                    and not has_special(new_tag) and len(new_tag) >= 3:
-                new_tags.append(new_tag)
-        self.tags = new_tags[:10]
-
-    def cleanup(self):
+    def cleanup(self, new_domain):
         self.responses.clear()
         self.emails.clear()
+        self.domain = new_domain
         self.tags = None
-        self.domain = None
         self.domain_doc = ""
         self.best_email = None
 
@@ -117,11 +79,11 @@ class BloggerDomainData:
 
 class BloggerDomainAnalyzer(object):
 
-    def __init__(self, email_ranker=None, tag_scrubber=None):
+    def __init__(self, domain, email_ranker=None, tag_scrubber=None):
         self.responses = list()
         self.emails = set()
         self.domain_doc = ""
-        self.domain = None
+        self.domain = domain
         self.tags = None
         self.found_impressions = None
         self.found_ads = None
@@ -140,14 +102,13 @@ class BloggerDomainAnalyzer(object):
         scrubbed_tags = self.tagscrubber.scrub_tags(self.tags)
         self.__analyze_words()
         data = BloggerDomainData(ranked_emails=ranked_emails, domain=self.domain, tags=scrubbed_tags, category=self.category)
-        self.cleanup()
         return data
 
-    def cleanup(self):
+    def cleanup(self, new_domain):
         self.responses.clear()
         self.emails.clear()
+        self.domain = new_domain
         self.tags = None
-        self.domain = None
         self.domain_doc = ""
         self.found_impressions = None
         self.found_ads = None
@@ -155,10 +116,6 @@ class BloggerDomainAnalyzer(object):
 
     def add_emails(self, emails):
         self.emails.update(emails)
-
-    def add_domain(self, domain):
-        if not self.domain:
-            self.domain = domain
 
     def add_response(self, response):
         self.responses.append(response)

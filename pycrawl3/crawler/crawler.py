@@ -2,7 +2,7 @@ from pycrawl3.utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.url_ops import *
 from pycrawl3.crawler.analyzer import DomainAnalyzer, BloggerDomainAnalyzer
-
+from pycrawl3.models import Blogger
 
 class CrawlerConfig(object):
 
@@ -16,8 +16,8 @@ class EmailCrawler(object):
 
     def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig()):
         q = deque()
-        q.append(seed)
-        self.seed_url = seed
+        q.append((seed.url, 1))
+        self.seed = seed
         self.url_queue = q
         self.blacklist = url_blacklist
         self.delegate = delegate
@@ -62,7 +62,7 @@ class EmailCrawler(object):
                 continue
 
             for email in new_emails:
-                self.delegate.add_email(email, url, seed=self.seed_url)
+                self.delegate.add_email(email, url, seed=self.seed.url)
 
             new_links = find_links(response.text, url_extras)
             for link in new_links:
@@ -78,8 +78,8 @@ class BloggerCrawler(object):
 
     def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
         q = deque()
-        q.append(seed)
-        self.seed_url = seed
+        q.append((seed.url, 1))
+        self.seed = seed
         self.url_queue = q
         self.blacklist = url_blacklist
         self.delegate = delegate
@@ -115,10 +115,21 @@ class BloggerCrawler(object):
                 else:
                     self.url_queue.appendleft((url, level+1))
 
-    def crawl(self):
-        analyzer = DomainAnalyzer()
-        start_url_extras = get_url_extras(self.url_queue[-1][0])
+    def analyze_blogger_then_proceed(self, analyzer):
+        domain, best_email, emails, tags = analyzer.analyze()
+        if best_email:
+            blogger = Blogger(
+                email_address=best_email,
+                other_emails=emails,
+                search_term=self.seed.search_term,
+                domain=domain,
+                tags=tags
+            )
+            self.delegate.add_blogger(blogger)
 
+    def crawl(self):
+        start_url_extras = get_url_extras(self.url_queue[-1][0])
+        analyzer = DomainAnalyzer(domain=start_url_extras[1])
         while self.url_queue:
             url, level = self.url_queue.pop()
             # add to processed immediately, to support failure
@@ -129,10 +140,8 @@ class BloggerCrawler(object):
                 continue
 
             if start_url_extras[4] != url_extras[4]:
-                domain, best_email, tags = analyzer.analyze()
-                if best_email:
-                    self.delegate.addBlogger(self.seed_url, domain, best_email, tags, tier=1)
-                analyzer.flush()
+                self.analyze_blogger_then_proceed(analyzer)
+                analyzer.cleanup(new_domain=url_extras[1])
                 start_url_extras = url_extras
 
             response = get_url_response(url)
@@ -144,9 +153,8 @@ class BloggerCrawler(object):
             except TimeoutError:
                 new_emails = None
 
-            analyzer.addDomain(url_extras[1])
-            analyzer.addEmails(new_emails)
-            analyzer.addResponse(response)
+            analyzer.add_emails(new_emails)
+            analyzer.add_response(response)
 
             new_links = find_links(response.text, url_extras, self.blacklist)
             self.enqueue_new_urls(url_extras[1], new_links, level)
@@ -157,7 +165,7 @@ class BloggerCrawler(object):
 
 class BloggerDomainCrawler(object):
 
-    def __init__(self, seed_url, analyzer=BloggerDomainAnalyzer(), limit=20):
+    def __init__(self, seed_url, analyzer, limit=20):
         q = deque()
         q.append(seed_url)
         self.seed_url = seed_url
@@ -187,7 +195,6 @@ class BloggerDomainCrawler(object):
             except TimeoutError:
                 new_emails = None
 
-            self.analyzer.add_domain(url_extras[1])
             self.analyzer.add_emails(new_emails)
             self.analyzer.add_response(response)
 
@@ -197,4 +204,6 @@ class BloggerDomainCrawler(object):
                     self.url_queue.appendleft(link)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
-        return self.analyzer.analyze()
+        blogger_data = self.analyzer.analyze()
+        self.analyzer.cleanup(new_domain=None)
+        return blogger_data

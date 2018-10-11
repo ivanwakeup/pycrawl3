@@ -10,10 +10,13 @@ from ..resources import EmailResource
 from pycrawl3.emails.emails import EmailRanker
 
 from pycrawl3.settings.common import BASE_DIR
+from pycrawl3.models import Seed
+
+base_template = 'pycrawl3/index.html'
 
 
 def index(request):
-    return render(request, 'pycrawl3/index.html')
+    return render(request, base_template)
 
 
 def crawl(request):
@@ -23,11 +26,11 @@ def crawl(request):
         url_tuple = [(url, 1) for url in url_list]
         mp_crawl_handler(url_tuple)
 
-    return render(request, 'pycrawl3/index.html')
+    return render(request, base_template)
 
 
 def start_crawl(request):
-    seeds = SeedDelegate.get_seeds_to_crawl()
+    seeds = Seed.objects.filter(crawled=False)
 
     #initialize crawl package
     crawl_package = []
@@ -38,15 +41,16 @@ def start_crawl(request):
     ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
 
     for seed in seeds:
-        SeedDelegate.set_crawled(seed)
-        crawl_package.append(((seed.url, 1), url_blacklist, email_blacklist, ranker))
+        seed.crawled = True
+        seed.save()
+        crawl_package.append((seed, url_blacklist, email_blacklist, ranker))
     mp_crawl_handler(crawl_package)
 
-    return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
+    return render(request, base_template)
 
 
 def start_blogger_crawl(request):
-    seeds = SeedDelegate.get_seeds_to_crawl()
+    seeds = Seed.objects.filter(crawled=False)
 
     base = BASE_DIR + '/dictionaries/'
     ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
@@ -57,11 +61,12 @@ def start_blogger_crawl(request):
     email_blacklist = Blacklist.factory("emails")
 
     for seed in seeds:
-        SeedDelegate.set_crawled(seed)
-        crawl_package.append(((seed.url, 1), url_blacklist, email_blacklist, ranker))
+        seed.crawled = True
+        seed.save()
+        crawl_package.append((seed, url_blacklist, email_blacklist, ranker))
     mp_blogger_handler(crawl_package)
 
-    return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
+    return render(request, base_template)
 
 
 def add_seed_url(request):
@@ -73,7 +78,7 @@ def add_seed_url(request):
         for seed in seed_list:
             delegate.add_seed(seed)
 
-    return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
+    return render(request, base_template)
 
 
 def get_emails_as_csv(request):
@@ -85,18 +90,18 @@ def get_emails_as_csv(request):
 
 
 def dispatch_crawlers(crawl_package):
-    url, url_blacklist, email_blacklist, email_ranker = crawl_package
+    seed, url_blacklist, email_blacklist, email_ranker = crawl_package
     writer = PostgresWriter(batch_size=1)
     delegate = EmailDelegate(writer, email_blacklist, email_ranker)
-    c = crawler.EmailCrawler(url, url_blacklist, delegate)
+    c = crawler.EmailCrawler(seed, url_blacklist, delegate)
     c.start()
 
 
 def dispatch_blogger_crawlers(crawl_package):
-    url, url_blacklist, email_blacklist, email_ranker = crawl_package
+    seed, url_blacklist, email_blacklist, email_ranker = crawl_package
     writer = PostgresWriter(batch_size=1)
     delegate = BloggerDelegate(writer, None)
-    c = crawler.BloggerCrawler(url, url_blacklist, delegate)
+    c = crawler.BloggerCrawler(seed, url_blacklist, delegate)
     c.start()
 
 

@@ -17,8 +17,8 @@ class TestCrawler(unittest.TestCase):
                                              'március', 'február', 'október', 'szeptember', 'április', 'május']))
 
     def test_blogger_domain_analyzer(self):
-        analyzer = BloggerDomainAnalyzer()
         url = "http://www.restaurantauctionslist.com"
+        analyzer = BloggerDomainAnalyzer(url)
         crawler = BloggerDomainCrawler(url, analyzer)
         data = crawler.start()
         print(data)
