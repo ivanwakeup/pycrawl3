@@ -22,7 +22,7 @@ class Seed(models.Model):
 
 
 class Blogger(models.Model):
-    seed = models.OneToOneField(Seed, null=True, blank=True, on_delete=models.SET_NULL)
+    seed = models.ForeignKey(Seed, null=True, blank=True, on_delete=models.SET_NULL)
     email_address = models.CharField("Email Address", max_length=1000, primary_key=True, null=False)
     other_emails = models.CharField("Other Emails", max_length=2000, null=True, blank=True)
     search_term = models.CharField("Search Term", max_length=1000, null=True, blank=True)
