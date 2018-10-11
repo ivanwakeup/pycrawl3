@@ -1,6 +1,6 @@
 from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
-from .models import Email, Seed
+from .models import Email, Seed, Blogger
 from import_export import resources
 
 
@@ -47,5 +47,8 @@ class EmailAdmin(PycrawlAdmin):
 @admin.register(Seed)
 class SeedAdmin(PycrawlAdmin):
     resource_class = SeedResource
+
+
+admin.site.register(Blogger)
 
 

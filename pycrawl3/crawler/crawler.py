@@ -120,10 +120,10 @@ class BloggerCrawler(object):
         if best_email:
             blogger = Blogger(
                 email_address=best_email,
-                other_emails=emails,
+                other_emails=",".join(emails),
                 search_term=self.seed.search_term,
                 domain=domain,
-                tags=tags
+                tags=",".join(tags)
             )
             self.delegate.add_blogger(blogger)
 
