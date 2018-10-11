@@ -10,11 +10,14 @@ import re
 DICTIONARY_BASE = BASE_DIR + '/dictionaries/'
 
 
-def build_tags(document):
+def build_tags(document, extra_weights=None):
     print('Loading dictionary... ')
     dic = BASE_DIR + "/tagging/data/dict.pkl"
     with open(dic, 'rb') as f:
         weights = pickle.load(f)
+
+    if extra_weights:
+        weights.update(extra_weights)
 
     tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
@@ -43,12 +46,12 @@ class DomainAnalyzer(object):
             self.emailranker = EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt',
                                  DICTIONARY_BASE + 'top_sites.txt')
 
-    def analyze(self):
+    def analyze(self, tag_weights=None):
         for email in self.emails:
             if self.emailranker.rank_email(email) == 1:
                 self.best_email = email
                 self.domain_doc = build_doc(self.responses)
-                self.tags = build_tags(self.domain_doc)
+                self.tags = build_tags(self.domain_doc, tag_weights)
                 log.info((self.domain, self.emails, self.tags))
         return self.domain, self.best_email, self.emails, self.tags
 
@@ -101,10 +104,10 @@ class BloggerDomainAnalyzer(object):
         if not self.tagscrubber:
             self.tagscrubber = TagScrubber()
 
-    def analyze(self):
+    def analyze(self, tag_weights=None):
         ranked_emails = self.rank_emails()
         self.domain_doc = build_doc(self.responses)
-        self.tags = build_tags(self.domain_doc)
+        self.tags = build_tags(self.domain_doc, tag_weights)
         scrubbed_tags = self.tagscrubber.scrub_tags(self.tags)
         self.__analyze_words()
         data = BloggerDomainData(
@@ -208,6 +211,7 @@ class TagScrubber(object):
     def filterphrases(filter_phrases, taglist):
         return list(filter(lambda x: not x in filter_phrases, taglist))
 
+    #this should always be called last in a filter chain! the list(set()) conversion can mess up tag order.
     @staticmethod
     def dedupe_and_strip(taglist):
         taglist = [tag.strip() for tag in taglist]

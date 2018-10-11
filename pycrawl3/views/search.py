@@ -7,12 +7,14 @@ from pycrawl3.utils.logger import log
 def search_google(request):
     if request.method == "POST":
         term = request.POST.get("search-term")
+        weights = request.POST.get("weighted-terms", None)
         search_results = google.search(term, 1)
 
         for result in search_results:
             seed = Seed(
                 url=result.link,
                 search_term=term,
+                weighted_terms=weights,
                 crawled=False
             )
             log.info("writing new seed: {} to db".format(seed.url))
