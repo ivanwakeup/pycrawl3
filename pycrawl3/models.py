@@ -30,3 +30,7 @@ class Blogger(models.Model):
     modified_count = models.IntegerField(default=0)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)
+
+    def __str__(self):
+        uid = str(self.email_address) + '  --  ' + str(self.domain) + '  --  ' + str(self.search_term)
+        return uid
