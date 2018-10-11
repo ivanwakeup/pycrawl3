@@ -51,7 +51,8 @@ class DomainAnalyzer(object):
 
         tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
-        self.tags = tagger(self.domain_doc)
+        tags = tagger(self.domain_doc)
+        self.tags = [str(tag.string) for tag in tags]
 
     def cleanup(self, new_domain):
         self.responses.clear()
