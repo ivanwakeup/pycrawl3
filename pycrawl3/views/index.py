@@ -114,7 +114,7 @@ def mp_crawl_handler(crawl_package):
 
 
 def mp_blogger_handler(crawl_package):
-    p = Pool(1)
+    p = Pool(4)
     try:
         p.map(dispatch_blogger_crawlers, crawl_package)
     except:

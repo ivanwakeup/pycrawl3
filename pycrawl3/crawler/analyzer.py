@@ -105,6 +105,21 @@ class BloggerDomainAnalyzer(object):
         data = BloggerDomainData(ranked_emails=ranked_emails, domain=self.domain, tags=scrubbed_tags, category=self.category)
         return data
 
+    def __build_doc(self):
+        for response in self.responses:
+            self.domain_doc += get_visible_text(response.text)
+
+    def __build_tags(self):
+        print('Loading dictionary... ')
+        dic = BASE_DIR + "/tagging/data/dict.pkl"
+        with open(dic, 'rb') as f:
+            weights = pickle.load(f)
+
+        tagger = Tagger(Reader(), Stemmer(), Rater(weights))
+
+        tags = tagger(self.domain_doc)
+        self.tags = [str(tag.string) for tag in tags]
+
     def cleanup(self, new_domain):
         self.responses.clear()
         self.emails.clear()
@@ -127,20 +142,9 @@ class BloggerDomainAnalyzer(object):
             ranked.append((email, self.emailranker.rank_email(email)))
         return sorted(ranked, key=lambda x: x[1])
 
-    def __build_doc(self):
-        for response in self.responses:
-            self.domain_doc += get_visible_text(response.text)
 
-    def __build_tags(self):
-        print('Loading dictionary... ')
-        dic = BASE_DIR + "/tagging/data/dict.pkl"
-        with open(dic, 'rb') as f:
-            weights = pickle.load(f)
 
-        tagger = Tagger(Reader(), Stemmer(), Rater(weights))
 
-        tags = tagger(self.domain_doc)
-        self.tags = [str(tag.string) for tag in tags]
 
     def __analyze_words(self):
         word_list = get_word_list(self.domain_doc)
