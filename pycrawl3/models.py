@@ -27,6 +27,7 @@ class Blogger(models.Model):
     other_emails = models.CharField("Other Emails", max_length=2000, null=True, blank=True)
     search_term = models.CharField("Search Term", max_length=1000, null=True, blank=True)
     domain = models.CharField("Domain", max_length=1000, null=True)
+    category = models.CharField("Category", max_length=1000, null=True, blank=True)
     tags = models.CharField("Tags", max_length=1000, null=True)
     scrubbed_tags = models.CharField("Scrubbed Tags", max_length=1000, null=True, blank=True)
     found_impressions = models.BooleanField(default=0)

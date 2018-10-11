@@ -32,9 +32,9 @@ class TestCrawler(unittest.TestCase):
             domain="http://eatingmywaythroughoc.blogspot.com/"
         )
         analyzer = BloggerDomainAnalyzer(blogger.domain)
-        crawler = BloggerDomainCrawler(blogger, analyzer, limit=5)
-        data = crawler.start()
-        print(data)
+        crawler = BloggerDomainCrawler(blogger, analyzer, limit=2)
+        blogger = crawler.start()
+        self.assertTrue(blogger.scrubbed_tags)
 
     def test_return_sort_links_with_priority(self):
         links = ['this.com', 'this.com/about']

@@ -225,5 +225,10 @@ class BloggerDomainCrawler(object):
             extra_weights = dict([item, .99] for item in self.blogger.seed.weighted_terms.split(","))
         blogger_data = self.analyzer.analyze(tag_weights=extra_weights)
 
+        self.blogger.found_impressions = blogger_data.found_impressions
+        self.blogger.found_ads = blogger_data.found_ads
+        self.blogger.scrubbed_tags = blogger_data.scrubbed_tags
+        self.blogger.category = blogger_data.category
+
         self.analyzer.cleanup(new_domain=None)
-        return blogger_data
+        return self.blogger
