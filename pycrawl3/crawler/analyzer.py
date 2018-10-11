@@ -10,6 +10,25 @@ import re
 DICTIONARY_BASE = BASE_DIR + '/dictionaries/'
 
 
+def build_tags(document):
+    print('Loading dictionary... ')
+    dic = BASE_DIR + "/tagging/data/dict.pkl"
+    with open(dic, 'rb') as f:
+        weights = pickle.load(f)
+
+    tagger = Tagger(Reader(), Stemmer(), Rater(weights))
+
+    tags = tagger(document)
+    return [str(tag.string) for tag in tags]
+
+
+def build_doc(url_responses):
+    doc = ''
+    for response in url_responses:
+        doc += get_visible_text(response.text)
+    return doc
+
+
 class DomainAnalyzer(object):
 
     def __init__(self, domain, email_ranker=None):
@@ -24,35 +43,14 @@ class DomainAnalyzer(object):
             self.emailranker = EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt',
                                  DICTIONARY_BASE + 'top_sites.txt')
 
-    def add_emails(self, emails):
-        self.emails.update(emails)
-
-    def add_response(self, response):
-        self.responses.append(response)
-
     def analyze(self):
         for email in self.emails:
             if self.emailranker.rank_email(email) == 1:
                 self.best_email = email
-                self.__build_doc()
-                self.__build_tags()
+                self.domain_doc = build_doc(self.responses)
+                self.tags = build_tags(self.domain_doc)
                 log.info((self.domain, self.emails, self.tags))
         return self.domain, self.best_email, self.emails, self.tags
-
-    def __build_doc(self):
-        for response in self.responses:
-            self.domain_doc += get_visible_text(response.text)
-
-    def __build_tags(self):
-        print('Loading dictionary... ')
-        dic = BASE_DIR + "/tagging/data/dict.pkl"
-        with open(dic, 'rb') as f:
-            weights = pickle.load(f)
-
-        tagger = Tagger(Reader(), Stemmer(), Rater(weights))
-
-        tags = tagger(self.domain_doc)
-        self.tags = [str(tag.string) for tag in tags]
 
     def cleanup(self, new_domain):
         self.responses.clear()
@@ -61,6 +59,12 @@ class DomainAnalyzer(object):
         self.tags = None
         self.domain_doc = ""
         self.best_email = None
+
+    def add_emails(self, emails):
+        self.emails.update(emails)
+
+    def add_response(self, response):
+        self.responses.append(response)
 
 
 class BloggerDomainData:
@@ -71,7 +75,8 @@ class BloggerDomainData:
             'domain',
             'found_impressions',
             'found_ads',
-            'tags',
+            'original_tags',
+            'scrubbed_tags',
             'category',
             'found_phone'
         ]
@@ -98,27 +103,30 @@ class BloggerDomainAnalyzer(object):
 
     def analyze(self):
         ranked_emails = self.rank_emails()
-        self.__build_doc()
-        self.__build_tags()
+        self.domain_doc = build_doc(self.responses)
+        self.tags = build_tags(self.domain_doc)
         scrubbed_tags = self.tagscrubber.scrub_tags(self.tags)
         self.__analyze_words()
-        data = BloggerDomainData(ranked_emails=ranked_emails, domain=self.domain, tags=scrubbed_tags, category=self.category)
+        data = BloggerDomainData(
+            ranked_emails=ranked_emails, domain=self.domain, original_tags=self.tags, category=self.category, found_impressions=self.found_impressions,
+            found_ads=self.found_ads, scrubbed_tags=scrubbed_tags)
         return data
 
-    def __build_doc(self):
-        for response in self.responses:
-            self.domain_doc += get_visible_text(response.text)
+    def rank_emails(self):
+        ranked = []
+        for email in self.emails:
+            ranked.append((email, self.emailranker.rank_email(email)))
+        return sorted(ranked, key=lambda x: x[1])
 
-    def __build_tags(self):
-        print('Loading dictionary... ')
-        dic = BASE_DIR + "/tagging/data/dict.pkl"
-        with open(dic, 'rb') as f:
-            weights = pickle.load(f)
-
-        tagger = Tagger(Reader(), Stemmer(), Rater(weights))
-
-        tags = tagger(self.domain_doc)
-        self.tags = [str(tag.string) for tag in tags]
+    def __analyze_words(self):
+        word_list = get_word_list(self.domain_doc)
+        counts = Counter(word_list)
+        ad_words = ["advertising", "advertise"]
+        for word in ad_words:
+            if word in counts:
+                self.found_ads = True
+        if "impressions" in counts:
+            self.found_impressions = True
 
     def cleanup(self, new_domain):
         self.responses.clear()
@@ -135,26 +143,6 @@ class BloggerDomainAnalyzer(object):
 
     def add_response(self, response):
         self.responses.append(response)
-
-    def rank_emails(self):
-        ranked = []
-        for email in self.emails:
-            ranked.append((email, self.emailranker.rank_email(email)))
-        return sorted(ranked, key=lambda x: x[1])
-
-
-
-
-
-    def __analyze_words(self):
-        word_list = get_word_list(self.domain_doc)
-        counts = Counter(word_list)
-        ad_words = ["advertising", "advertise"]
-        for word in ad_words:
-            if word in counts:
-                self.found_ads = True
-        if "impressions" in counts:
-            self.found_impressions = True
 
 
 class TagScrubber(object):
