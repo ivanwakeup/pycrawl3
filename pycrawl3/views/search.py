@@ -1,7 +1,7 @@
 from google import google
 from django.shortcuts import render
 from pycrawl3.models import Seed
-from pycrawl3.utils.logger import log
+from pycrawl3.persistence.persistence import SeedDelegate
 
 
 def search_google(request):
@@ -17,7 +17,8 @@ def search_google(request):
                 weighted_terms=weights,
                 crawled=False
             )
-            log.info("writing new seed: {} to db".format(seed.url))
-            seed.save()
+            SeedDelegate.add_or_update_seed(seed)
 
         return render(request, 'pycrawl3/index.html', context={'message': 'successseed'})
+
+

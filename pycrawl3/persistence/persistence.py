@@ -52,6 +52,19 @@ class SeedDelegate(object):
         seed.crawled = True
         seed.save()
 
+    @staticmethod
+    def add_or_update_seed(seed):
+        try:
+            existing_seeds = Seed.objects.filter(url=seed.url)
+            log.info("Seed or Seeds {} found, updating....".format(seed.url))
+            for seed in existing_seeds:
+                seed.modified_count = F('modified_count') + 1
+                seed.save()
+            return
+        except Seed.DoesNotExist:
+            log.info("new Seed {} being saved to DB".format(seed))
+            seed.save()
+
 
 class BloggerDelegate(object):
 

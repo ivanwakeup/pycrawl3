@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 
 
 class Email(models.Model):
@@ -36,7 +35,6 @@ class Blogger(models.Model):
     modified_count = models.IntegerField(default=0)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)
-
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
