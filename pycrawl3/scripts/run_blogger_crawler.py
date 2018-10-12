@@ -3,7 +3,7 @@ django.setup()
 
 import sys
 from pycrawl3.settings.common import BASE_DIR
-from blacklist import FileBlacklist
+from pycrawl3.crawler.blacklist import FileBlacklist
 from pycrawl3.crawler.crawler import BloggerCrawler
 from pycrawl3.persistence.persistence import PostgresWriter, BloggerDelegate
 from pycrawl3.models import Seed
@@ -14,7 +14,7 @@ if __name__ == "__main__":
         print("wrong args supplied")
         sys.exit(1)
     url = sys.argv[1]
-    bl_file = BASE_DIR + "/static/pycrawl3/top_sites.txt"
+    bl_file = BASE_DIR + "/dictionaries/top_sites.txt"
 
     writer = PostgresWriter(batch_size=1)
     delegate = BloggerDelegate(writer, None)

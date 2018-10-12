@@ -128,7 +128,9 @@ class BloggerCrawler(object):
                     self.url_queue.appendleft((url, level+1))
 
     def analyze_blogger_then_proceed(self, analyzer):
-        extra_weights = dict([item, .99] for item in self.seed.weighted_terms.split(","))
+        extra_weights = None
+        if self.seed and self.seed.weighted_terms:
+            extra_weights = dict([item, .99] for item in self.seed.weighted_terms.split(","))
         domain, best_email, emails, tags = analyzer.analyze(tag_weights=extra_weights)
         if best_email:
             blogger = Blogger(
