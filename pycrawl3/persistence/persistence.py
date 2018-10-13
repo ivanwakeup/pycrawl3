@@ -91,7 +91,6 @@ class BloggerDelegate(object):
             log.info("new blogger {} being saved to DB".format(blogger))
             blogger.save()
 
-
 class Writer(object):
 
     def __init__(self, batch_size):
