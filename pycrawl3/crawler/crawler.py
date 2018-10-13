@@ -105,7 +105,7 @@ class BloggerCrawler(object):
     #process URL only if base url has occurred less than or equal to configurable limit
     def should_process_domain(self, url_extras):
         domain = url_extras[4]
-        if url_extras[0].endswith(('.pdf', '.jpg', '.mp3', '.png', '#')):
+        if url_extras[0].endswith(('.pdf', '.jpg', '.mp3', '.png', '#', '.gif')):
             return False
         if domain in self.url_count_map:
             if self.url_count_map[domain] >= self.config.url_occurence_limit:
@@ -133,6 +133,7 @@ class BloggerCrawler(object):
             extra_weights = dict([item, .99] for item in self.seed.weighted_terms.split(","))
         domain, best_email, emails, tags = analyzer.analyze(tag_weights=extra_weights)
         if best_email:
+            log.info("Finished analyzing domain {} -- {}, attempting to create object".format(domain, best_email))
             blogger = Blogger(
                 seed=self.seed,
                 email_address=best_email,
@@ -140,6 +141,7 @@ class BloggerCrawler(object):
                 domain=domain,
                 tags=",".join(tags)
             )
+            log.info("blogger {} created, adding to delegate".format(blogger))
             self.delegate.add_blogger(blogger)
 
     def crawl(self):

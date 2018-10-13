@@ -54,14 +54,17 @@ class SeedDelegate(object):
 
     @staticmethod
     def add_or_update_seed(seed):
-        try:
-            existing_seeds = Seed.objects.filter(url=seed.url)
+        existing_seeds = Seed.objects.filter(url=seed.url)
+        if existing_seeds:
             log.info("Seed or Seeds {} found, updating....".format(seed.url))
-            for seed in existing_seeds:
-                seed.modified_count = F('modified_count') + 1
-                seed.save()
+            for e_seed in existing_seeds:
+                e_seed.modified_count = F('modified_count') + 1
+                e_seed.crawled = seed.crawled
+                e_seed.weighted_terms = seed.weighted_terms
+                e_seed.search_term = seed.search_term
+                e_seed.save()
             return
-        except Seed.DoesNotExist:
+        else:
             log.info("new Seed {} being saved to DB".format(seed))
             seed.save()
 
@@ -74,26 +77,19 @@ class BloggerDelegate(object):
         self.__writer = writer
         self.blacklist = blacklist
 
+    #unfortunately, you can run into race conditions here. I'm not sure what the fix is short of implementing some
+    #queueing mechanism for db writes.
     def add_blogger(self, blogger):
         try:
-            exists = Blogger.objects.get(email_address=blogger.email_address)
-            log.info("Blogger {} found, updating....".format(blogger.email_address))
-            exists.modified_count = F('modified_count') + 1
-            exists.save()
-            return
+            e_blogger = Blogger.objects.get(email_address=blogger.email_address)
+            log.info("blogger {} already found. proceeding...".format(blogger))
+            e_blogger.modified_count = F('modified_count') + 1
+            e_blogger.save()
+        except Blogger.MultipleObjectsReturned:
+            log.info("blogger {} already found. proceeding...".format(blogger))
         except Blogger.DoesNotExist:
             log.info("new blogger {} being saved to DB".format(blogger))
             blogger.save()
-
-    @staticmethod
-    def get_seeds_to_crawl():
-        seeds = Seed.objects.filter(crawled=False)
-        return list(seeds)
-
-    @staticmethod
-    def set_crawled(seed):
-        seed.crawled = True
-        seed.save()
 
 
 class Writer(object):
