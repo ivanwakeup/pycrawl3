@@ -27,7 +27,7 @@ def dispatch_analyzer(blogger):
     blogger_updated = crawler.start()
     blogger_updated.save()
 
-bloggers = Blogger.objects.all()
+bloggers = Blogger.objects.exclude(scrubbed_tags__isnull=False)
 
 mp_handler(bloggers)
 
