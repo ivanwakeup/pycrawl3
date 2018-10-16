@@ -231,7 +231,7 @@ class BloggerDomainCrawler(object):
 
         self.blogger.found_impressions = blogger_data.found_impressions
         self.blogger.found_ads = blogger_data.found_ads
-        self.blogger.scrubbed_tags = blogger_data.scrubbed_tags
+        self.blogger.scrubbed_tags = ",".join(blogger_data.scrubbed_tags)
         self.blogger.category = blogger_data.category
 
         self.analyzer.cleanup(new_domain=None)
