@@ -14,6 +14,7 @@ class Email(models.Model):
 class Seed(models.Model):
     url = models.CharField("Url", max_length=1000, null=False)
     category = models.CharField("Category", max_length=1000, null=True, blank=True)
+    topic = models.CharField("Topic", max_length=1000, null=True, blank=True)
     search_term = models.CharField("Search Term", max_length=255, null=True, blank=True)
     weighted_terms = models.CharField("Weighted Terms", max_length=1000, null=True, blank=True)
     crawled = models.BooleanField("Url Crawled")
@@ -41,6 +42,7 @@ class Blogger(models.Model):
     scrubbed_tags = models.CharField("Scrubbed Tags", max_length=1000, null=True, blank=True)
     found_impressions = models.BooleanField(default=0, null=True)
     found_ads = models.BooleanField(default=0, null=True)
+    found_current_year = models.BooleanField(default=0, null=True)
     modified_count = models.IntegerField(default=0)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)

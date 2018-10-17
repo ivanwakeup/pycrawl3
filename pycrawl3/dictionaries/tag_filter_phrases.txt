@@ -139,3 +139,5 @@ team shop
 email address
 privacy
 mailing list
+max-width
+max-height

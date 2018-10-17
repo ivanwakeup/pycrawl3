@@ -159,7 +159,7 @@ class TagScrubber(object):
         if self.is_foreign_language(taglist):
             return []
         result = self.filterdigits(taglist)
-        result = self.filtershorttags(result)
+        result = self.filtertaglength(result)
         result = self.remove_special(result)
         result = self.filterwords(self.filter_words, result)
         result = self.filterphrases(self.filter_phrases, result)
@@ -176,7 +176,7 @@ class TagScrubber(object):
                 foreign_count += 1
         try:
             pct = foreign_count/len(taglist)
-            if pct > .6:
+            if pct > .3:
                 return True
         except ZeroDivisionError:
             return False
@@ -204,8 +204,8 @@ class TagScrubber(object):
 
 
     @staticmethod
-    def filtershorttags(taglist):
-        return list(filter(lambda x: not len(x) < 3, taglist))
+    def filtertaglength(taglist):
+        return list(filter(lambda x: not (len(x) < 3 or len(x) > 35), taglist))
 
     @staticmethod
     def filterphrases(filter_phrases, taglist):
