@@ -68,6 +68,16 @@ class SeedDelegate(object):
             log.info("new Seed {} being saved to DB".format(seed))
             seed.save()
 
+    @staticmethod
+    def add_seed_or_pass(seed):
+        try:
+            exists = Seed.objects.get(url=seed.url)
+            log.debug("seed found, doing nothing...")
+            return
+        except Seed.MultipleObjectsReturned:
+            log.debug("multiple seeds found, doing nothing...")
+        except Seed.DoesNotExist:
+            seed.save()
 
 class BloggerDelegate(object):
 

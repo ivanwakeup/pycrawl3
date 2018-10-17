@@ -49,7 +49,7 @@ def load_csv_seeds(file):
                 weighted_terms=weighted_terms,
                 crawled=False
             )
-            SeedDelegate.add_or_update_seed(seed)
+            SeedDelegate.add_seed_or_pass(seed)
 
 
 if __name__ == "__main__":
