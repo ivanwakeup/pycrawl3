@@ -15,7 +15,7 @@ import csv
 from pycrawl3.persistence.persistence import SeedDelegate
 from pycrawl3.nlp.similar_words import get_similar_words
 from pycrawl3.utils.logger import log
-import time
+import time, random
 
 
 def load_csv_seeds(file):
@@ -32,7 +32,7 @@ def load_csv_seeds(file):
         weighted_terms = get_similar_words(p[1])
 
         log.info("waiting 60 seconds before making next google search....")
-        time.sleep(60)
+        time.sleep(random.randint(50,65))
         log.info("trying to search google for {}".format(p[2]))
 
         try:
