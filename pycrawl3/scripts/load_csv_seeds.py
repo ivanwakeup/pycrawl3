@@ -18,7 +18,7 @@ from pycrawl3.nlp.similar_words import get_similar_words
 
 def load_csv_seeds(file):
     with open(file, newline='\n') as csv_file:
-        reader = csv.reader(csv_file, delimiter=",", quotechar='"')
+        reader = csv.reader(csv_file, delimiter=",")
         for row in reader:
             category = row[0]
             topic = row[1]
@@ -30,6 +30,7 @@ def load_csv_seeds(file):
             for result in results:
                 seed = Seed(
                     url=result.link,
+                    category=category,
                     search_term=search_term,
                     weighted_terms=weighted_terms,
                     crawled=False
@@ -37,3 +38,7 @@ def load_csv_seeds(file):
                 SeedDelegate.add_or_update_seed(seed)
 
 
+if __name__ == "__main__":
+    import sys
+    cf = sys.argv[1]
+    load_csv_seeds(cf)

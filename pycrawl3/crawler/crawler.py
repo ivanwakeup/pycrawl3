@@ -1,13 +1,13 @@
 from pycrawl3.utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.url_ops import *
-from pycrawl3.crawler.analyzer import DomainAnalyzer, BloggerDomainAnalyzer
+from pycrawl3.crawler.analyzer import DomainAnalyzer
 from pycrawl3.models import Blogger
 
 
 def sort_links_with_priority(linkset):
     def has_contact_word(link):
-        contact_words = ["contact", "about"]
+        contact_words = ["contact", "about", "sponsor"]
         for word in contact_words:
             if word in link:
                 return 0
@@ -88,10 +88,11 @@ class EmailCrawler(object):
 
 class BloggerCrawler(object):
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
+    def __init__(self, seeds, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
         q = deque()
-        q.append((seed.url, 1))
-        self.seed = seed
+        for seed in seeds:
+            q.append((seed.url, 1))
+        self.seeds = seeds
         self.url_queue = q
         self.blacklist = url_blacklist
         self.delegate = delegate
@@ -118,7 +119,8 @@ class BloggerCrawler(object):
         return True
 
     def enqueue_new_urls(self, curr_base_url, new_urls, level):
-        for url in new_urls:
+        sorted_links = sort_links_with_priority(new_urls)
+        for url in sorted_links:
             new_extras = get_url_extras(url)
             if url not in self.processed_urls and level < self.config.crawler_depth:
                 #append websites from the same domain to the start of the queue
@@ -127,7 +129,7 @@ class BloggerCrawler(object):
                 else:
                     self.url_queue.appendleft((url, level+1))
 
-    def analyze_blogger_then_proceed(self, analyzer):
+    def analyze_blogger_then_proceed(self, seed, analyzer):
         extra_weights = None
         if self.seed and self.seed.weighted_terms:
             extra_weights = dict([item, .99] for item in self.seed.weighted_terms.split(","))
@@ -174,7 +176,6 @@ class BloggerCrawler(object):
             analyzer.add_response(response)
 
             new_links = find_links(response.text, url_extras, self.blacklist)
-            new_links = sort_links_with_priority(new_links)
             self.enqueue_new_urls(url_extras[1], new_links, level)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
