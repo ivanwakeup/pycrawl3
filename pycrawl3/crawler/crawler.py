@@ -1,7 +1,7 @@
 from pycrawl3.utils.timeout import TimeoutError
 from collections import deque
 from pycrawl3.crawler.url_ops import *
-from pycrawl3.crawler.analyzer import DomainAnalyzer
+from pycrawl3.crawler.analyzer import DomainAnalyzer, BloggerDeterminer
 from pycrawl3.models import Blogger
 
 
@@ -88,11 +88,10 @@ class EmailCrawler(object):
 
 class BloggerCrawler(object):
 
-    def __init__(self, seeds, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
+    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
         q = deque()
-        for seed in seeds:
-            q.append((seed.url, 1))
-        self.seeds = seeds
+        q.append((seed.url, 1))
+        self.seed = seed
         self.url_queue = q
         self.blacklist = url_blacklist
         self.delegate = delegate
@@ -151,8 +150,10 @@ class BloggerCrawler(object):
         analyzer = DomainAnalyzer(domain=start_url_extras[1])
         while self.url_queue:
             url, level = self.url_queue.pop()
-            # add to processed immediately, to support failure
+            if url in self.processed_urls:
+                continue
             self.processed_urls.add(url)
+
             url_extras = get_url_extras(url)
 
             if not self.should_process_domain(url_extras):
@@ -237,3 +238,97 @@ class BloggerDomainCrawler(object):
 
         self.analyzer.cleanup(new_domain=None)
         return self.blogger
+
+
+class BloggerCrawler2(object):
+
+    def __init__(self, seeds, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
+        q = deque()
+        for seed in seeds:
+            q.append((seed.url, 1))
+        self.seeds = seeds
+        self.url_queue = q
+        self.blacklist = url_blacklist
+        self.delegate = delegate
+        self.config = crawler_config
+        self.url_count_map = {}
+        self.processed_urls = set()
+
+    def start(self):
+        self.crawl()
+
+    #process URL only if base url has occurred less than or equal to configurable limit
+    def should_process_domain(self, url_extras):
+        domain = url_extras[4]
+        if url_extras[0].endswith(('.pdf', '.jpg', '.mp3', '.png', '#', '.gif')):
+            return False
+        if domain in self.url_count_map:
+            if self.url_count_map[domain] >= self.config.url_occurence_limit:
+                self.url_count_map[domain] += 1
+                return False
+            else:
+                self.url_count_map[domain] += 1
+        else:
+            self.url_count_map[domain] = 1
+        return True
+
+    def enqueue_new_urls(self, curr_base_url, new_urls, level):
+        sorted_links = sort_links_with_priority(new_urls)
+        for url in sorted_links:
+            new_extras = get_url_extras(url)
+            if url not in self.processed_urls and level < self.config.crawler_depth:
+                #append websites from the same domain to the start of the queue
+                if curr_base_url == new_extras[1]:
+                    self.url_queue.append((url, level))
+                else:
+                    self.url_queue.appendleft((url, level+1))
+
+    def analyze_blogger_then_proceed(self, seed, analyzer):
+        extra_weights = None
+        if self.seed and self.seed.weighted_terms:
+            extra_weights = dict([item, .99] for item in self.seed.weighted_terms.split(","))
+        domain, best_email, emails, tags = analyzer.analyze(tag_weights=extra_weights)
+        if best_email:
+            log.info("Finished analyzing domain {} -- {}, attempting to create object".format(domain, best_email))
+            blogger = Blogger(
+                seed=self.seed,
+                email_address=best_email,
+                other_emails=",".join(emails),
+                domain=domain,
+                tags=",".join(tags)
+            )
+            log.info("blogger {} created, adding to delegate".format(blogger))
+            self.delegate.add_blogger(blogger)
+
+    def crawl(self):
+        start_url_extras = get_url_extras(self.url_queue[-1][0])
+        determiner = BloggerDeterminer()
+        while self.url_queue:
+            url, level = self.url_queue.pop()
+            if url in self.processed_urls:
+                continue
+
+            self.processed_urls.add(url)
+
+            url_extras = get_url_extras(url)
+            if not self.should_process_domain(url_extras):
+                continue
+
+            if start_url_extras[4] != url_extras[4]:
+
+                start_url_extras = url_extras
+
+            response = get_url_response(url)
+            if not response or not response.ok:
+                continue
+
+            try:
+                new_emails = find_emails(response.text)
+            except TimeoutError:
+                new_emails = None
+
+            new_links = find_links(response.text, url_extras, self.blacklist)
+            self.enqueue_new_urls(url_extras[1], new_links, level)
+
+        log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
+        return 0

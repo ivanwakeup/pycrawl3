@@ -218,3 +218,41 @@ class TagScrubber(object):
         taglist = list(filter(lambda x: not x == '', taglist))
         taglist = list(set(taglist))
         return taglist
+
+
+class BloggerDeterminer(object):
+
+    def __init__(self, email_ranker=EmailRanker(DICTIONARY_BASE + 'sales_words.txt', DICTIONARY_BASE + 'common_names_sorted.txt', DICTIONARY_BASE + 'top_sites.txt')):
+        self.email_ranker = email_ranker
+        self.emails = set()
+        self.ranked_emails = None
+
+    def add_emails(self, emails):
+        self.emails.update(emails)
+
+    def should_proceed_with_domain(self):
+        if len(self.ranked_emails) > 5:
+            return False
+        for email, rank in self.ranked_emails:
+            if rank in [1, 2]:
+                return True
+        return False
+
+    def get_ranked_emails(self):
+        return self.ranked_emails
+
+    def get_emails(self):
+        return self.emails
+
+    def get_best_email(self):
+        return self.ranked_emails[0][0]
+
+    def rank_emails(self):
+        ranked = []
+        for email in self.emails:
+            ranked.append((email, self.email_ranker.rank_email(email)))
+        self.ranked_emails = sorted(ranked, key=lambda x: x[1])
+
+    def cleanup(self):
+        self.ranked_emails = None
+        self.emails = set()
