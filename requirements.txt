@@ -10,6 +10,7 @@ dill==0.2.8.2
 Django==2.1
 django-import-export==1.0.1
 djangorestframework==3.8.2
+en-core-web-lg==2.0.0
 en-core-web-sm==2.0.0
 et-xmlfile==1.0.1
 fake-useragent==0.1.11
@@ -23,6 +24,7 @@ msgpack==0.5.6
 msgpack-numpy==0.4.4.1
 multidict==4.3.1
 murmurhash==0.28.0
+nltk==3.3
 numpy==1.15.2
 odfpy==1.3.6
 openpyxl==2.5.5
@@ -36,6 +38,7 @@ PyYAML==3.12
 regex==2017.4.5
 requests==2.19.1
 selenium==2.53.6
+sense2vec==1.0.0a0
 six==1.11.0
 spacy==2.0.12
 stemming==1.0.1
