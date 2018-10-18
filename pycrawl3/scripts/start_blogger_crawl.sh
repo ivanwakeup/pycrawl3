@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sleep=100
+sleep=1000
 
 echo 'starting crawl for potential bloggers...'
 python crawl_potential_bloggers.py &
