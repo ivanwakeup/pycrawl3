@@ -4,7 +4,7 @@ django.setup()
 import sys
 from pycrawl3.settings.common import BASE_DIR
 from pycrawl3.crawler.blacklist import FileBlacklist
-from pycrawl3.crawler.crawler import BloggerCrawler
+from pycrawl3.crawler.crawler import PotentialBloggerCrawler
 from pycrawl3.persistence.persistence import PostgresWriter, BloggerDelegate
 from pycrawl3.models import Seed
 
@@ -25,5 +25,5 @@ if __name__ == "__main__":
         crawled=False
     )
     blacklist = FileBlacklist(bl_file)
-    c = BloggerCrawler(seed, blacklist, delegate=delegate)
+    c = PotentialBloggerCrawler(seed, blacklist, delegate=delegate)
     c.start()

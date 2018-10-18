@@ -98,8 +98,7 @@ def dispatch_crawlers(crawl_package):
 def dispatch_blogger_crawlers(crawl_package):
     seed, url_blacklist, email_blacklist, email_ranker = crawl_package
     writer = PostgresWriter(batch_size=1)
-    delegate = BloggerDelegate(writer, None)
-    c = crawler.BloggerCrawler(seed, url_blacklist, delegate)
+    c = crawler.PotentialBloggerCrawler(seed, url_blacklist)
     c.start()
 
 

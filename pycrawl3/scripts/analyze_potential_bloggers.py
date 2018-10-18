@@ -8,8 +8,8 @@ from pycrawl3.settings import common
 if not settings.configured:
     settings.configure(default_settings=common, DEBUG=True)
 
-from pycrawl3.models import Blogger
-from pycrawl3.crawler.analyzer import TagScrubber, BloggerDomainAnalyzer
+from pycrawl3.models import PotentialBlogger
+from pycrawl3.crawler.analyzer import BloggerDomainAnalyzer
 from pycrawl3.crawler.crawler import BloggerDomainCrawler
 from multiprocessing import Pool
 
@@ -27,7 +27,7 @@ def dispatch_analyzer(blogger):
     blogger_updated = crawler.start()
     blogger_updated.save()
 
-bloggers = Blogger.objects.exclude(scrubbed_tags__isnull=False)
+bloggers = PotentialBlogger.objects.distinct('email_address')
 
 mp_handler(bloggers)
 

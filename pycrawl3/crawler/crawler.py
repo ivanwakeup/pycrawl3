@@ -1,7 +1,7 @@
 from collections import deque
 from pycrawl3.crawler.url_ops import *
 from pycrawl3.crawler.analyzer import DomainAnalyzer, BloggerDeterminer
-from pycrawl3.models import Blogger
+from pycrawl3.models import PotentialBlogger, Blogger
 
 
 def sort_links_with_priority(linkset):
@@ -85,9 +85,9 @@ class EmailCrawler(object):
         return
 
 
-class BloggerCrawler(object):
+class PotentialBloggerCrawler(object):
 
-    def __init__(self, seed, url_blacklist, delegate, crawler_config=CrawlerConfig(limit=5, depth=4)):
+    def __init__(self, seed, url_blacklist, delegate=None, crawler_config=CrawlerConfig(limit=5, depth=4)):
         q = deque()
         q.append((seed.url, 1))
         self.seed = seed
@@ -117,7 +117,8 @@ class BloggerCrawler(object):
         return True
 
     def enqueue_new_urls(self, curr_base_url, new_urls, level):
-        for url in new_urls:
+        new_urls_sorted = sort_links_with_priority(new_urls)
+        for url in new_urls_sorted:
             new_extras = get_url_extras(url)
             if url not in self.processed_urls and level < self.config.crawler_depth:
                 #append websites from the same domain to the start of the queue
@@ -126,30 +127,30 @@ class BloggerCrawler(object):
                 else:
                     self.url_queue.appendleft((url, level+1))
 
-    def analyze_blogger_then_proceed(self, seed, analyzer):
+    def analyze_blogger_then_proceed(self, analyzer):
         extra_weights = None
         if self.seed and self.seed.weighted_terms:
             extra_weights = dict([item, .99] for item in self.seed.weighted_terms.split(","))
         domain, best_email, emails, tags = analyzer.analyze(tag_weights=extra_weights)
         if best_email:
             log.info("Finished analyzing domain {} -- {}, attempting to create object".format(domain, best_email))
-            blogger = Blogger(
+            blogger = PotentialBlogger(
                 seed=self.seed,
                 email_address=best_email,
                 other_emails=",".join(emails),
                 domain=domain,
                 tags=",".join(tags)
             )
-            log.info("blogger {} created, adding to delegate".format(blogger))
-            self.delegate.add_blogger(blogger)
+            log.info("blogger {} created, now saving to DB!!!".format(blogger))
+            blogger.save()
 
     def crawl(self):
         start_url_extras = get_url_extras(self.url_queue[-1][0])
         analyzer = DomainAnalyzer(domain=start_url_extras[1])
         while self.url_queue:
             url, level = self.url_queue.pop()
-            # if url in self.processed_urls:
-            #     continue
+            if url in self.processed_urls:
+                continue
             self.processed_urls.add(url)
 
             url_extras = get_url_extras(url)
@@ -175,8 +176,7 @@ class BloggerCrawler(object):
             analyzer.add_response(response)
 
             new_links = find_links(response.text, url_extras, self.blacklist)
-            new_links_sorted = sort_links_with_priority(new_links)
-            self.enqueue_new_urls(url_extras[1], new_links_sorted, level)
+            self.enqueue_new_urls(url_extras[1], new_links, level)
 
         log.info("{} finished crawling".format(self.__class__.__name__ + str(id(self))))
         return 0
@@ -184,10 +184,10 @@ class BloggerCrawler(object):
 
 class BloggerDomainCrawler(object):
 
-    def __init__(self, blogger, analyzer, limit=20):
+    def __init__(self, potential_blogger, analyzer, limit=20):
         q = deque()
-        q.append(blogger.domain)
-        self.blogger = blogger
+        q.append(potential_blogger.domain)
+        self.blogger = potential_blogger
         self.url_queue = q
         self.pages_processed = 0
         self.limit = limit
@@ -230,14 +230,21 @@ class BloggerDomainCrawler(object):
             extra_weights = dict([item, .99] for item in self.blogger.seed.weighted_terms.split(","))
         blogger_data = self.analyzer.analyze(tag_weights=extra_weights)
 
-        self.blogger.found_impressions = blogger_data.found_impressions
-        self.blogger.found_ads = blogger_data.found_ads
-        self.blogger.scrubbed_tags = blogger_data.scrubbed_tags
-        self.blogger.category = blogger_data.category
-        self.blogger.found_current_year = blogger_data.found_current_year
+        new_blogger = Blogger()
+        new_blogger.seed = self.blogger.seed
+        new_blogger.email_address = self.blogger.email_address
+        new_blogger.other_emails = self.blogger.other_emails
+        new_blogger.domain = self.blogger.domain
+        new_blogger.category = self.blogger.category
+        new_blogger.tags = self.blogger.tags
+        new_blogger.found_impressions = blogger_data.found_impressions
+        new_blogger.found_ads = blogger_data.found_ads
+        new_blogger.scrubbed_tags = blogger_data.scrubbed_tags
+        new_blogger.category = blogger_data.category
+        new_blogger.found_current_year = blogger_data.found_current_year
 
         self.analyzer.cleanup(new_domain=None)
-        return self.blogger
+        return new_blogger
 
 
 class BloggerCrawler2(object):

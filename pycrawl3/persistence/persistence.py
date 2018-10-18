@@ -92,16 +92,17 @@ class BloggerDelegate(object):
     #unfortunately, you can run into race conditions here. I'm not sure what the fix is short of implementing some
     #queueing mechanism for db writes.
     def add_blogger(self, blogger):
-        try:
-            e_blogger = Blogger.objects.get(email_address=blogger.email_address)
-            log.info("blogger {} already found. proceeding...".format(blogger))
-            e_blogger.modified_count = F('modified_count') + 1
-            e_blogger.save()
-        except Blogger.MultipleObjectsReturned:
-            log.info("blogger {} already found. proceeding...".format(blogger))
-        except Blogger.DoesNotExist:
-            log.info("new blogger {} being saved to DB".format(blogger))
-            blogger.save()
+        blogger.save()
+        # try:
+        #     e_blogger = Blogger.objects.get(email_address=blogger.email_address)
+        #     log.info("blogger {} already found. proceeding...".format(blogger))
+        #     e_blogger.modified_count = F('modified_count') + 1
+        #     e_blogger.save()
+        # except Blogger.MultipleObjectsReturned:
+        #     log.info("blogger {} already found. proceeding...".format(blogger))
+        # except Blogger.DoesNotExist:
+        #     log.info("new blogger {} being saved to DB".format(blogger))
+        #     blogger.save()
 
 class Writer(object):
 

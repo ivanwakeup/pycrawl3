@@ -23,6 +23,21 @@ class Seed(models.Model):
     modified_time = models.DateTimeField("Updated Time", auto_now=True, null=True)
 
 
+class PotentialBlogger(models.Model):
+    seed = models.ForeignKey(Seed, null=True, blank=True, on_delete=models.SET_NULL)
+    email_address = models.CharField("Email Address", max_length=1000,  null=False)
+    other_emails = models.CharField("Other new_Emails", max_length=2000, null=True, blank=True)
+    domain = models.CharField("Domain", max_length=1000, null=True)
+    category = models.CharField("Category", max_length=1000, null=True, blank=True)
+    tags = models.CharField("Tags", max_length=1000, null=True)
+    created_time = models.DateTimeField("Created Time", auto_now_add=True)
+    modified_time = models.DateTimeField("Modified Time", auto_now=True)
+
+    def __str__(self):
+        uid = str(self.email_address) + '  --  ' + str(self.domain) + '  --  ' + str(self.seed.search_term)
+        return uid
+
+
 class Blogger(models.Model):
     seed = models.ForeignKey(Seed, null=True, blank=True, on_delete=models.SET_NULL)
     email_address = models.CharField("Email Address", max_length=1000,  null=False)
