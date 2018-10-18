@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/home/ivanwakeup/projects/pycrawl3')
+
 import django
 if not hasattr(django, 'apps'):
     django.setup()
@@ -15,7 +18,7 @@ from multiprocessing import Pool
 
 
 def mp_handler(bloggers):
-    p = Pool(4)
+    p = Pool(8)
     try:
         p.map(dispatch_analyzer, bloggers)
     except:

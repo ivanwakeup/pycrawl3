@@ -13,7 +13,11 @@ def get_similar_words(word):
     assert doc[0].text == u"{}".format(word)
     #freq = doc[0]._.s2v_freq
     #vector = doc[0]._.s2v_vec
-    most_similar = doc[0]._.s2v_most_similar(15)
+    try:
+        most_similar = doc[0]._.s2v_most_similar(15)
+    except KeyError as e:
+        log.error("couldn't find similar words for {}....using the input word itself.".format(word))
+        return word
 
     res = []
     for similar in most_similar:
@@ -21,3 +25,8 @@ def get_similar_words(word):
 
     log.info("similar words for {} are {}...".format(word, res))
     return ",".join(res)
+
+
+if __name__ == "__main__":
+    import sys
+    print(get_similar_words(sys.argv[1]))
