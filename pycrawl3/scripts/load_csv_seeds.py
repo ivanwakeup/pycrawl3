@@ -31,8 +31,9 @@ def load_csv_seeds(file):
     for p in seed_package:
         weighted_terms = get_similar_words(p[1])
 
-        log.info("waiting 60 seconds before making next google search....")
-        time.sleep(random.randint(50,65))
+        wait = random.randint(50,65)
+        log.info("waiting {} seconds before making next google search...".format(wait))
+        time.sleep(wait)
         log.info("trying to search google for {}".format(p[2]))
 
         try:
@@ -46,7 +47,7 @@ def load_csv_seeds(file):
                 url=result.link,
                 category=p[0],
                 search_term=p[2],
-                weighted_terms=weighted_terms,
+                weighted_terms=",".join(weighted_terms),
                 crawled=False
             )
             SeedDelegate.add_seed_or_pass(seed)

@@ -80,6 +80,7 @@ class BloggerDomainData:
             'found_ads',
             'original_tags',
             'scrubbed_tags',
+            'found_current_year',
             'category',
             'found_phone'
         ]
@@ -110,9 +111,14 @@ class BloggerDomainAnalyzer(object):
         self.tags = build_tags(self.domain_doc, tag_weights)
         scrubbed_tags = self.tagscrubber.scrub_tags(self.tags)
         self.__analyze_words()
+
+        found_current_year = False
+        if '2018' in self.tags:
+            found_current_year = True
+
         data = BloggerDomainData(
             ranked_emails=ranked_emails, domain=self.domain, original_tags=self.tags, category=self.category, found_impressions=self.found_impressions,
-            found_ads=self.found_ads, scrubbed_tags=scrubbed_tags)
+            found_ads=self.found_ads, scrubbed_tags=scrubbed_tags, found_current_year=found_current_year)
         return data
 
     def rank_emails(self):

@@ -77,7 +77,9 @@ class SeedDelegate(object):
         except Seed.MultipleObjectsReturned:
             log.debug("multiple seeds found, doing nothing...")
         except Seed.DoesNotExist:
+            log.info("writing new seed {} to db.".format(seed))
             seed.save()
+
 
 class BloggerDelegate(object):
 

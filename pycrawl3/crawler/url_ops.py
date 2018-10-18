@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from pycrawl3.utils.logger import log
 from bs4.element import Comment
 from collections import Counter
-
+from pycrawl3.utils.timeout import TimeoutError
 
 def get_url_extras(url):
     parts = urlparse(url)
@@ -33,9 +33,13 @@ def get_url_response(url):
     return response
 
 
-def find_emails(text):
-    emails = set(re.findall(
-        r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.com", text, re.I))
+def try_find_emails(text):
+    try:
+        emails = set(re.findall(
+            r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.com", text, re.I))
+    except TimeoutError:
+        log.info("caught {} and proceeding...".format(TimeoutError))
+        emails = None
     return emails
 
 

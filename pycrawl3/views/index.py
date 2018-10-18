@@ -12,6 +12,8 @@ from pycrawl3.emails.emails import EmailRanker
 from pycrawl3.settings.common import BASE_DIR
 from pycrawl3.models import Seed
 
+from random import shuffle
+
 base_template = 'pycrawl3/index.html'
 
 
@@ -30,7 +32,7 @@ def crawl(request):
 
 
 def start_crawl(request):
-    seeds = Seed.objects.filter(crawled=False)
+    seeds = Seed.objects.filter(crawled=False).order_by('?')
 
     #initialize crawl package
     crawl_package = []
@@ -39,7 +41,6 @@ def start_crawl(request):
 
     base = BASE_DIR + '/dictionaries/'
     ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
-
     for seed in seeds:
         seed.crawled = True
         seed.save()
@@ -50,8 +51,8 @@ def start_crawl(request):
 
 
 def start_blogger_crawl(request):
-    seeds = Seed.objects.filter(crawled=False)
-
+    seeds = Seed.objects.filter(crawled=False).order_by('?')
+    print(len(seeds))
     base = BASE_DIR + '/dictionaries/'
     ranker = EmailRanker(base+'sales_words.txt', base+'common_names_sorted.txt', base+'top_sites.txt')
 
@@ -59,10 +60,7 @@ def start_blogger_crawl(request):
     crawl_package = []
     url_blacklist = Blacklist.factory("file", file=base+"top_sites.txt")
     email_blacklist = Blacklist.factory("emails")
-
     for seed in seeds:
-        seed.crawled = True
-        seed.save()
         crawl_package.append((seed, url_blacklist, email_blacklist, ranker))
     mp_blogger_handler(crawl_package)
 

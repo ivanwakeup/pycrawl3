@@ -3,7 +3,7 @@ from sense2vec import Sense2VecComponent
 from pycrawl3.utils.logger import log
 
 nlp = spacy.load('en')
-s2v = Sense2VecComponent('/Users/ivanwakeup/data/reddit_vectors-1.1.0')
+s2v = Sense2VecComponent('/home/ivanwakeup/data/reddit_vectors-1.1.0')
 nlp.add_pipe(s2v)
 
 
