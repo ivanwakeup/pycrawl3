@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.environ.get("PYCRAWL3_HOME"))
+
 import django
 if not hasattr(django, 'apps'):
     django.setup()
@@ -14,4 +18,5 @@ from pycrawl3.crawler.scoring import score_blogger
 bloggers = Blogger.objects.all()
 
 for blogger in bloggers:
-    blogger.sc
+    blogger.creator_score = score_blogger(blogger)
+    blogger.save()

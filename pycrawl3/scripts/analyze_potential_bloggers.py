@@ -16,6 +16,7 @@ from pycrawl3.models import PotentialBlogger
 from pycrawl3.crawler.analyzer import BloggerDomainAnalyzer
 from pycrawl3.crawler.crawler import BloggerDomainCrawler
 from multiprocessing import Pool
+from pycrawl3.crawler.scoring import score_blogger
 
 
 def mp_handler(bloggers):
@@ -29,6 +30,7 @@ def dispatch_analyzer(blogger):
     analyzer = BloggerDomainAnalyzer(blogger.domain)
     crawler = BloggerDomainCrawler(blogger, analyzer, limit=10)
     blogger_updated = crawler.start()
+    blogger_updated.creator_score = score_blogger(blogger_updated)
     blogger_updated.save()
 
 bloggers = PotentialBlogger.objects.distinct('email_address')

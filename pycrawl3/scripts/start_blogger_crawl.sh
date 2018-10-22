@@ -18,5 +18,7 @@ printf 'KILLING ANALYZER BLOGGER CRAWLER!!!!\n\n\n\n'
 
 kill $(pgrep -f 'analyze_potential_bloggers.py')
 
+python score_bloggers.py
+
 
 
