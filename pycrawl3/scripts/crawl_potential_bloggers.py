@@ -1,5 +1,6 @@
 import sys
-sys.path.append('/home/ivanwakeup/projects/pycrawl3')
+import os
+sys.path.append(os.environ.get("PYCRAWL3_HOME"))
 
 import django
 if not hasattr(django, 'apps'):
