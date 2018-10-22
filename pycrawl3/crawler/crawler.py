@@ -193,7 +193,7 @@ class BloggerDomainCrawler(object):
         self.limit = limit
         self.analyzer = analyzer
 
-    def start(self):
+    def     start(self):
         return self.crawl()
 
     def crawl(self):
@@ -239,7 +239,7 @@ class BloggerDomainCrawler(object):
         new_blogger.tags = self.blogger.tags
         new_blogger.found_impressions = blogger_data.found_impressions
         new_blogger.found_ads = blogger_data.found_ads
-        new_blogger.scrubbed_tags = blogger_data.scrubbed_tags
+        new_blogger.scrubbed_tags = ",".join(blogger_data.scrubbed_tags)
         new_blogger.category = blogger_data.category
         new_blogger.found_current_year = blogger_data.found_current_year
 

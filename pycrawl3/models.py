@@ -50,6 +50,7 @@ class Blogger(models.Model):
     found_impressions = models.BooleanField(default=0, null=True)
     found_ads = models.BooleanField(default=0, null=True)
     found_current_year = models.BooleanField(default=0, null=True)
+    creator_score = models.IntegerField(default=0, null=True, blank=True)
     modified_count = models.IntegerField(default=0)
     created_time = models.DateTimeField("Created Time", auto_now_add=True)
     modified_time = models.DateTimeField("Modified Time", auto_now=True)
