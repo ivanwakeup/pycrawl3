@@ -1,24 +1,24 @@
 #!/bin/bash
 
 sleep=1000
+TIMES=10
 
-echo 'starting crawl for potential bloggers...'
-python crawl_potential_bloggers.py &
-sleep $sleep
+until [ $TIMES -lt 0 ]; do
+    echo 'starting crawl for potential bloggers...'
+    python crawl_potential_bloggers.py &
+    sleep $sleep
 
-printf 'KILLING POTENTIAL BLOGGER CRAWLER!!!!\n\n\n\n'
+    printf 'KILLING POTENTIAL BLOGGER CRAWLER!!!!\n\n\n\n'
 
-kill $(pgrep -f 'crawl_potential_bloggers.py')
-echo 'starting potential blogger analysis'
-python analyze_potential_bloggers.py &
-sleep $sleep
-
-
-printf 'KILLING ANALYZER BLOGGER CRAWLER!!!!\n\n\n\n'
-
-kill $(pgrep -f 'analyze_potential_bloggers.py')
-
-python score_bloggers.py
+    kill $(pgrep -f 'python')
+    echo 'starting potential blogger analysis'
+    python analyze_potential_bloggers.py &
+    sleep $sleep
 
 
+    printf 'KILLING ANALYZER BLOGGER CRAWLER!!!!\n\n\n\n'
+
+    kill $(pgrep -f 'python')
+    let TIMES-=1
+done
 
