@@ -28,6 +28,7 @@ def load_csv_seeds(file):
             search_term = row[2]
             seed_package.append((category, topic, search_term))
 
+    random.shuffle(seed_package)
     for p in seed_package:
         weighted_terms = get_similar_words(p[1])
 
