@@ -26,12 +26,15 @@ def mp_handler(bloggers):
     except:
         pass
 
+
 def dispatch_analyzer(blogger):
     analyzer = BloggerDomainAnalyzer(blogger.domain)
     crawler = BloggerDomainCrawler(blogger, analyzer, limit=10)
     blogger_updated = crawler.start()
     blogger_updated.creator_score = score_blogger(blogger_updated)
     blogger_updated.save()
+    #you can delete potential_blogger entry now
+    blogger.delete()
 
 bloggers = PotentialBlogger.objects.distinct('email_address')
 

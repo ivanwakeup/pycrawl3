@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sleep=1000
-TIMES=10
+TIMES=100
 
 until [ $TIMES -lt 0 ]; do
     echo 'starting crawl for potential bloggers...'

@@ -193,7 +193,7 @@ class BloggerDomainCrawler(object):
         self.limit = limit
         self.analyzer = analyzer
 
-    def     start(self):
+    def start(self):
         return self.crawl()
 
     def crawl(self):
