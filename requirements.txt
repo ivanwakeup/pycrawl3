@@ -7,7 +7,7 @@ cymem==1.31.2
 cytoolz==0.9.0.1
 diff-match-patch==20121119
 dill==0.2.8.2
-Django==2.1
+Django==2.2.10
 django-import-export==1.0.1
 djangorestframework==3.8.2
 en-core-web-sm==2.0.0
